@@ -5,3 +5,5 @@ scikit-learn
 pysentiment2
 xgboost
 scipy
+torch
+transformers

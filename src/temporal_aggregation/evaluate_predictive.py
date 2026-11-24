@@ -34,6 +34,11 @@ CLASS_ORDER = ("low", "medium", "high")
 RANDOM_STATE = 42
 JISDOR_FEATURES = PRICE_FEATURES
 
+# The legacy A3/A4 CSVs were generated from daily means and are therefore not
+# valid attention/event-aware experiments.  Only this model currently has the
+# verified article-level FinBERT source required by A3/A4.
+ARTICLE_LEVEL_A3_A4_MODELS = {"finbert_headline"}
+
 
 def load_targets() -> pd.DataFrame:
     """Load the central leak-free target and canonical 70/15/15 split."""
@@ -46,7 +51,12 @@ def discover_files() -> list[Path]:
     for model_dir in sorted(AGGREGATION_DIR.iterdir()):
         if not model_dir.is_dir() or model_dir.name in {"evaluation", "predictive_evaluation"}:
             continue
-        files.extend(sorted(path for path in model_dir.glob("*.csv") if "_A" in path.name and "diagnostics" not in path.name))
+        for path in sorted(model_dir.glob("*.csv")):
+            if "_A" not in path.name or "diagnostics" in path.name:
+                continue
+            if ("_A3_" in path.name or "_A4_" in path.name) and model_dir.name not in ARTICLE_LEVEL_A3_A4_MODELS:
+                continue
+            files.append(path)
     return files
 
 

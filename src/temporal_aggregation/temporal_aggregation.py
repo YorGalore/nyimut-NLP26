@@ -37,6 +37,13 @@ EMBEDDING_FILES = {
     "qwen_headline": ROOT / "data/processed/head_vs_full/headline/qwen_headline_features.csv",
 }
 
+# A3/A4 require an article-level source. Daily feature CSVs above are not used
+# for those methods: one row per date makes attention collapse to A0 and loses
+# an article's event category.
+ARTICLE_EMBEDDING_FILES = {
+    "finbert_headline": ROOT / "data/processed/temporal_aggregation/article_embeddings/finbert_headline_articles.csv",
+}
+
 # Optional metadata file. Leave as None if each embedding CSV already has
 # an event_category column.
 EVENT_METADATA_CSV = None
@@ -262,11 +269,15 @@ def load_article_embeddings(path, event_meta=None):
     if "event_category" not in df.columns:
         df["event_category"] = "other"
 
-    df["event_category"] = (
-        df["event_category"].fillna("other").astype(str).str.lower().str.strip()
-    )
-    df.loc[df["event_category"].isin(["", "nan", "none", "null"]), "event_category"] = "other"
-    df.loc[~df["event_category"].isin(EVENT_CATEGORIES), "event_category"] = "other"
+    def normalise_categories(value):
+        values = [
+            item.strip().lower()
+            for item in str(value).split("|")
+            if item.strip().lower() in EVENT_CATEGORIES
+        ]
+        return "|".join(dict.fromkeys(values)) if values else "other"
+
+    df["event_category"] = df["event_category"].fillna("other").map(normalise_categories)
 
     emb_cols = find_embedding_columns(df)
     for col in emb_cols:
@@ -279,6 +290,18 @@ def load_article_embeddings(path, event_meta=None):
     # A duplicate article_id is not automatically removed because a source may
     # legitimately provide multiple chunks. The expected contract is one row/article.
     return df, emb_cols
+
+
+def validate_article_level_input(article_df, model_name):
+    """Reject daily-preaggregated inputs before running A3/A4."""
+    if article_df["article_id"].duplicated().any():
+        raise ValueError(f"{model_name}: article_id harus unik untuk input A3/A4.")
+    counts = article_df.groupby("date").size()
+    if not (counts > 1).any():
+        raise ValueError(
+            f"{model_name}: input A3/A4 hanya memiliki satu baris per tanggal. "
+            "Gunakan embedding per-artikel, bukan fitur harian yang sudah di-mean."
+        )
 
 
 def save_features(df, path):
@@ -340,9 +363,16 @@ def event_aware_features(article_df, emb_cols, calendar):
     Mean embedding and article count per event category per date.
     Each category gets its own vector. Categories with no articles get zeros.
     """
+    # Categories are multi-label. An article about sanctions during a war can
+    # contribute to both feature blocks instead of an arbitrary primary label.
+    categorised = article_df.copy()
+    categorised["event_category"] = categorised["event_category"].str.split("|")
+    categorised = categorised.explode("event_category")
+    categorised["event_category"] = categorised["event_category"].fillna("other")
+
     pieces = []
     for category in EVENT_CATEGORIES:
-        subset = article_df[article_df["event_category"] == category]
+        subset = categorised[categorised["event_category"] == category]
         if subset.empty:
             grouped = pd.DataFrame(index=pd.DatetimeIndex([], name="date"), columns=emb_cols)
             counts = pd.Series(dtype="int64", name=f"{category}_count")
@@ -528,7 +558,17 @@ def attention_pooling(article_df, emb_cols, calendar, target_df, train_dates, mo
 
 # ------------------------------- MAIN -------------------------------------
 
-def run_for_model(model_name, embedding_path, calendar, target_df, train_dates, event_meta):
+def run_for_model(
+    model_name,
+    embedding_path,
+    calendar,
+    target_df,
+    train_dates,
+    event_meta,
+    *,
+    base_only=False,
+    article_only=False,
+):
     log(f"Processing model: {model_name}")
     articles, emb_cols = load_article_embeddings(embedding_path, event_meta)
 
@@ -542,28 +582,31 @@ def run_for_model(model_name, embedding_path, calendar, target_df, train_dates, 
     model_dir = OUTPUT_DIR / model_name
     model_dir.mkdir(parents=True, exist_ok=True)
 
-    # A0: daily mean
-    a0 = daily_mean(articles, emb_cols, calendar)
-    save_features(a0, model_dir / f"{model_name}_A0_daily_mean.csv")
+    if not article_only:
+        # A0: daily mean
+        a0 = daily_mean(articles, emb_cols, calendar)
+        save_features(a0, model_dir / f"{model_name}_A0_daily_mean.csv")
 
-    # A1: trailing rolling mean of A0
-    for window in ROLLING_WINDOWS:
-        a1 = rolling_mean_features(a0, emb_cols, window)
-        a1 = calendar[["date"]].merge(a1, on="date", how="left")
-        save_features(a1, model_dir / f"{model_name}_A1_rolling_{window}d.csv")
+        # A1: trailing rolling mean of A0
+        for window in ROLLING_WINDOWS:
+            a1 = rolling_mean_features(a0, emb_cols, window)
+            a1 = calendar[["date"]].merge(a1, on="date", how="left")
+            save_features(a1, model_dir / f"{model_name}_A1_rolling_{window}d.csv")
 
-    # A2: exponential decay of A0
-    for half_life in EXPONENTIAL_HALF_LIVES:
-        a2 = exponential_decay_features(a0, emb_cols, half_life)
-        save_features(a2, model_dir / f"{model_name}_A2_exp_decay_hl{half_life}d.csv")
+        # A2: exponential decay of A0
+        for half_life in EXPONENTIAL_HALF_LIVES:
+            a2 = exponential_decay_features(a0, emb_cols, half_life)
+            save_features(a2, model_dir / f"{model_name}_A2_exp_decay_hl{half_life}d.csv")
 
-    # A3: learned attention over individual articles per date
-    a3 = attention_pooling(articles, emb_cols, calendar, target_df, train_dates, model_name)
-    save_features(a3, model_dir / f"{model_name}_A3_attention.csv")
+    if not base_only:
+        validate_article_level_input(articles, model_name)
+        # A3: learned attention over individual articles per date
+        a3 = attention_pooling(articles, emb_cols, calendar, target_df, train_dates, model_name)
+        save_features(a3, model_dir / f"{model_name}_A3_attention.csv")
 
-    # A4: event-aware mean vectors and event counts
-    a4 = event_aware_features(articles, emb_cols, calendar)
-    save_features(a4, model_dir / f"{model_name}_A4_event_aware.csv")
+        # A4: event-aware mean vectors and event counts
+        a4 = event_aware_features(articles, emb_cols, calendar)
+        save_features(a4, model_dir / f"{model_name}_A4_event_aware.csv")
 
     # Save a compact run summary
     summary = {
@@ -581,6 +624,7 @@ def run_for_model(model_name, embedding_path, calendar, target_df, train_dates, 
         "attention_train_end": str(max(train_dates).date()),
         "target_column": TARGET_COLUMN,
         "target_classes": TARGET_CLASSES,
+        "a3_a4_input_level": "article" if article_only else "not_generated_from_this_input",
     }
     with open(model_dir / f"{model_name}_run_metadata.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
@@ -588,7 +632,7 @@ def run_for_model(model_name, embedding_path, calendar, target_df, train_dates, 
     log(f"Finished: {model_name}")
 
 
-def main():
+def main(only_a3_a4=False):
     ensure_dirs()
     calendar = load_daily_calendar()
     train, valid, test = build_dataset(required_cols=PRICE_FEATURES)
@@ -601,12 +645,27 @@ def main():
     log(f"{TARGET_COLUMN} distribution:\n{calendar[TARGET_COLUMN].value_counts(dropna=False).to_string()}")
 
     failures = []
-    for model_name, path in EMBEDDING_FILES.items():
+    if not only_a3_a4:
+        for model_name, path in EMBEDDING_FILES.items():
+            try:
+                # Daily data is valid only for A0--A2.
+                run_for_model(
+                    model_name, path, calendar, targets, train_dates, event_meta,
+                    base_only=True,
+                )
+            except Exception as exc:
+                failures.append((model_name, repr(exc)))
+                log(f"FAILED {model_name}: {exc}")
+
+    for model_name, path in ARTICLE_EMBEDDING_FILES.items():
         try:
-            run_for_model(model_name, path, calendar, targets, train_dates, event_meta)
+            run_for_model(
+                model_name, path, calendar, targets, train_dates, event_meta,
+                article_only=True,
+            )
         except Exception as exc:
-            failures.append((model_name, repr(exc)))
-            log(f"FAILED {model_name}: {exc}")
+            failures.append((f"{model_name}_article", repr(exc)))
+            log(f"FAILED {model_name} article-level A3/A4: {exc}")
 
     with open(OUTPUT_DIR / "run_failures.json", "w", encoding="utf-8") as f:
         json.dump(
@@ -626,4 +685,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--only-a3-a4",
+        action="store_true",
+        help="Regenerate only the article-level A3 and A4 features.",
+    )
+    main(parser.parse_args().only_a3_a4)
