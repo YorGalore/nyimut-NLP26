@@ -1,0 +1,218 @@
+{
+  "script": "src/analysis_3c.py",
+  "nature": "deskriptif; tidak dipakai untuk mengubah Model C, fitur, atau hyperparameter",
+  "models_refit": {
+    "C": {
+      "n_estimators": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05
+    },
+    "B": {
+      "n_estimators": 400,
+      "max_depth": 2,
+      "learning_rate": 0.05
+    },
+    "assert": "prediksi valid (akurasi) dan test (per tanggal) identik dengan data/processed/ablation/ablation_matrix.csv & ablation_test_predictions.csv"
+  },
+  "seed": 42,
+  "settings": {
+    "pca_components": 50,
+    "tsne_perplexity": 30,
+    "tsne_init": "pca",
+    "knn_k": 15,
+    "knn_cv": "TimeSeriesSplit(5) di atas tanggal unik (artikel satu hari tidak terpecah)",
+    "label_permutations": 100,
+    "label_permutation_unit": "label hari diacak; artikel mewarisi label harinya",
+    "circular_shift_baseline": "100 geser sirkular label hari (>= 30 hari), pelengkap: mempertahankan autokorelasi rezim",
+    "permutation_importance_repeats": 50,
+    "permutation_importance_unit": "baris satu blok diacak utuh (semua kolom bersama)",
+    "shap": "xgboost Booster.predict(pred_contribs=True), log-odds; aditivitas di-assert",
+    "pca_fit": "di-fit pada data train saja, lalu diterapkan ke semua"
+  },
+  "part_i": {
+    "n_articles_embedded": 6013,
+    "n_articles_without_label": 6,
+    "days_without_label": [
+      "2021-09-02",
+      "2021-09-06",
+      "2021-09-07",
+      "2021-09-08"
+    ],
+    "n_articles_labeled": 6007,
+    "n_articles_high_low": 4195,
+    "n_days": 1104,
+    "pca_explained_variance_article": 0.7403098457036938,
+    "pca_explained_variance_day": 0.7677522136622421,
+    "separation": [
+      {
+        "level": "artikel (high vs low, PCA-50)",
+        "n_rows": 4195,
+        "n_days": 759,
+        "n_high_rows": 2322,
+        "n_low_rows": 1873,
+        "silhouette": 0.0013161432993755258,
+        "silhouette_perm_mean": 0.0002203642537322122,
+        "silhouette_perm_sd": 0.00025489609647514467,
+        "silhouette_perm_p": 0.009900990099009901,
+        "silhouette_circshift_mean": 0.0016731447825851314,
+        "silhouette_circshift_sd": 0.0016386939187125217,
+        "silhouette_circshift_p": 0.5148514851485149,
+        "knn_accuracy": 0.4409239106747268,
+        "knn_accuracy_perm_mean": 0.4977173067759535,
+        "knn_accuracy_perm_sd": 0.010927133774033143,
+        "knn_accuracy_perm_p": 1.0,
+        "knn_accuracy_circshift_mean": 0.48144447027184434,
+        "knn_accuracy_circshift_sd": 0.02823994458698462,
+        "knn_accuracy_circshift_p": 0.9306930693069307,
+        "knn_balanced_accuracy": 0.5009568895994432,
+        "knn_balanced_accuracy_perm_mean": 0.5001506581424858,
+        "knn_balanced_accuracy_perm_sd": 0.009226578174770834,
+        "knn_balanced_accuracy_perm_p": 0.4752475247524752,
+        "knn_balanced_accuracy_circshift_mean": 0.499334367850767,
+        "knn_balanced_accuracy_circshift_sd": 0.010027961953012974,
+        "knn_balanced_accuracy_circshift_p": 0.42574257425742573,
+        "exceeds_random_baseline_p_lt_0_05": {
+          "silhouette": true,
+          "knn_accuracy": false,
+          "knn_balanced_accuracy": false
+        }
+      },
+      {
+        "level": "hari (high vs low, PCA-50)",
+        "n_rows": 759,
+        "n_days": 759,
+        "n_high_rows": 379,
+        "n_low_rows": 380,
+        "silhouette": 0.0015731888969749528,
+        "silhouette_perm_mean": 2.5161957642163202e-05,
+        "silhouette_perm_sd": 0.0005458753100927423,
+        "silhouette_perm_p": 0.039603960396039604,
+        "silhouette_circshift_mean": 0.003598663347712147,
+        "silhouette_circshift_sd": 0.002002140387746928,
+        "silhouette_circshift_p": 0.900990099009901,
+        "knn_accuracy": 0.4396825396825396,
+        "knn_accuracy_perm_mean": 0.49803174603174605,
+        "knn_accuracy_perm_sd": 0.019927974734487132,
+        "knn_accuracy_perm_p": 0.9900990099009901,
+        "knn_accuracy_circshift_mean": 0.4866666666666667,
+        "knn_accuracy_circshift_sd": 0.03789966365507185,
+        "knn_accuracy_circshift_p": 0.900990099009901,
+        "knn_balanced_accuracy": 0.48815896712220236,
+        "knn_balanced_accuracy_perm_mean": 0.501283869231085,
+        "knn_balanced_accuracy_perm_sd": 0.01848290848795439,
+        "knn_balanced_accuracy_perm_p": 0.8514851485148515,
+        "knn_balanced_accuracy_circshift_mean": 0.5009941798058626,
+        "knn_balanced_accuracy_circshift_sd": 0.0208247859650236,
+        "knn_balanced_accuracy_circshift_p": 0.7524752475247525,
+        "exceeds_random_baseline_p_lt_0_05": {
+          "silhouette": true,
+          "knn_accuracy": false,
+          "knn_balanced_accuracy": false
+        }
+      }
+    ],
+    "seconds": 87.7
+  },
+  "part_ii": {
+    "shap_class_order_xgboost": [
+      "high",
+      "low",
+      "medium"
+    ],
+    "ner": {
+      "mean_abs_shap_block_total": 0.1057320386171341,
+      "max_feature_mean_abs_shap": 0.040272850543260574,
+      "n_ner_features_with_nonzero_shap": 8,
+      "n_splits_on_ner_features": 38
+    },
+    "top_svd_components_B": [
+      "tfidf_svd_5",
+      "tfidf_svd_14",
+      "tfidf_svd_13",
+      "tfidf_svd_9",
+      "tfidf_svd_8"
+    ],
+    "seconds": 2.1
+  },
+  "part_iii": {
+    "false_market_signal": {
+      "n_test_days": 167,
+      "n_naive_wrong": 48,
+      "n_A_wrong_direction": 39,
+      "n_flagged": 65,
+      "n_flagged_both_conditions": 22,
+      "flagged_corrected_by_A": 20,
+      "naive_wrong_corrected_by_A": 20,
+      "A_wrong_direction_corrected_by_A": 0,
+      "flagged_corrected_by_B": 26,
+      "naive_wrong_corrected_by_B": 23,
+      "A_wrong_direction_corrected_by_B": 8,
+      "flagged_corrected_by_C": 31,
+      "naive_wrong_corrected_by_C": 24,
+      "A_wrong_direction_corrected_by_C": 12
+    },
+    "seconds": 0.4
+  },
+  "headline_embeddings": {
+    "script": "src/analysis_3c_headline_embed.py",
+    "n_articles": 6013,
+    "n_empty_title": 0,
+    "n_all_zero_vectors": 0,
+    "text": "title dari data/raw/cnbc_raw.csv (match url ke news_tfidf_clean.csv), clean_text() saja",
+    "checkpoint": "ProsusAI/finbert",
+    "revision_commit_hash": "0bc2ac10dda6929bcb1f77ccc43c7ec5c424f031",
+    "revision_equals_bert_path_metadata": true,
+    "pad_token_handling": "pad_token bawaan: '[PAD]' (id 0); eos_token: None (id None)",
+    "n_chunks_total": 6013,
+    "n_articles_multi_chunk": 0,
+    "n_articles_no_chunk": 0,
+    "special_tokens": [
+      "Prefix tokens    : [101]",
+      "Suffix tokens    : [102]"
+    ],
+    "pooling": "mean pooling token konten (attention_mask * (1 - special_tokens_mask)); judul = 1 chunk kecuali > 512 token",
+    "dtype": "float32",
+    "device": "mps",
+    "versions": {
+      "python": "3.14.10",
+      "torch": "2.15.0",
+      "transformers": "5.24.0",
+      "numpy": "2.5.5",
+      "pandas": "3.1.1"
+    },
+    "seconds_load": 4.1,
+    "seconds_embed": 20.6,
+    "output": "data/processed/analysis_3c/finbert_headline_article_embeddings.csv"
+  },
+  "versions": {
+    "python": "3.14.10",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1",
+    "xgboost": "3.4.1",
+    "torch": "2.15.0",
+    "transformers": "5.24.0",
+    "matplotlib": "3.11.2",
+    "nbformat": "5.11.1",
+    "nbclient": "0.11.0",
+    "ipykernel": "7.4.0",
+    "ipython": "9.19.1",
+    "pillow": "13.0.0",
+    "jupyter_client": "8.10.0",
+    "jupyter_core": "5.9.1"
+  },
+  "packages_installed_for_3c": {
+    "matplotlib": "3.11.2",
+    "nbformat": "5.11.1",
+    "nbclient": "0.11.0",
+    "ipykernel": "7.4.0"
+  },
+  "seconds": {
+    "refit_models": 7.7,
+    "part_i": 87.7,
+    "part_ii": 2.1,
+    "part_iii": 0.4,
+    "total": 98.2
+  }
+}

@@ -15,6 +15,7 @@
 # ============================================================
 
 from pathlib import Path
+import argparse
 import json
 import random
 import sys
@@ -135,6 +136,12 @@ MAX_FEATURE_VALUE = 1e6
 # False:
 #   rerun everything
 RESUME = True
+
+# Only these A3/A4 files are built from a verified one-row-per-article input.
+# Older daily-input A3/A4 artefacts must never re-enter the ranking: attention
+# over a single daily vector is equivalent to a mean, and event categories are
+# unavailable after daily pre-aggregation.
+ARTICLE_LEVEL_A3_A4_MODELS = {"finbert_headline"}
 
 
 # ============================================================
@@ -375,6 +382,10 @@ def discover_aggregation_files():
                 in name
                 for i in range(5)
             ):
+                continue
+
+            is_a3_a4 = "_A3_" in name or "_A4_" in name
+            if is_a3_a4 and model_dir.name not in ARTICLE_LEVEL_A3_A4_MODELS:
                 continue
 
             files.append(
@@ -1376,7 +1387,7 @@ def aggregate_results(
 # MAIN
 # ============================================================
 
-def main():
+def main(force_a3_a4=False):
 
     set_seed()
 
@@ -1501,9 +1512,11 @@ def main():
             "__summary.json"
         )
 
+        force_this_file = force_a3_a4 and ("_A3_" in filename or "_A4_" in filename)
         if (
             RESUME
             and summary_file.exists()
+            and not force_this_file
         ):
 
             log(
@@ -1745,5 +1758,10 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
-
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--force-a3-a4",
+        action="store_true",
+        help="Re-evaluate the verified article-level A3/A4 files while retaining cached A0-A2 results.",
+    )
+    main(parser.parse_args().force_a3_a4)

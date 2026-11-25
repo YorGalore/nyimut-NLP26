@@ -1,0 +1,400 @@
+{
+  "script": "src/ablation.py",
+  "split": {
+    "train": [
+      "2021-09-16",
+      "2025-03-25",
+      772
+    ],
+    "valid": [
+      "2025-03-26",
+      "2025-12-09",
+      165
+    ],
+    "test": [
+      "2025-12-11",
+      "2026-09-01",
+      167
+    ]
+  },
+  "test_class_counts": {
+    "low": 51,
+    "medium": 65,
+    "high": 51
+  },
+  "rows": {
+    "naive": "Naive persistence (kelas kemarin)",
+    "A": "XGBoost harga (PRICE_FEATURES)",
+    "B": "XGBoost harga + LM + TF-IDF(SVD 20)",
+    "C1": "XGBoost harga + finbert_fulltext jalur BERT (early fusion)",
+    "C2": "C1 + Top2Vec",
+    "C3": "C1 + NER",
+    "C": "Model C: C1 + Top2Vec + NER",
+    "C_optimized": "Fitur C, grid diperluas dipilih via walk-forward CV train+valid",
+    "EF5_old": "Pembanding sekunder: harga + roberta_fulltext LAMA + LDA (bukan Model C)"
+  },
+  "features": {
+    "naive": "lag1_volatility_class",
+    "A": "PRICE_FEATURES (10)",
+    "B": "PRICE_FEATURES (10) + LM_FEATURES (3) + TF-IDF SVD (20)",
+    "C1": "price (10) + finbert_fulltext bert_path (768)",
+    "C2": "price (10) + finbert_fulltext bert_path (768) + top2vec (204)",
+    "C3": "price (10) + finbert_fulltext bert_path (768) + ner (54)",
+    "C": "price (10) + finbert_fulltext bert_path (768) + top2vec (204) + ner (54)",
+    "C_optimized": "sama dengan C",
+    "EF5_old": "price (10) + roberta_fulltext lama (768) + lda (50)"
+  },
+  "model_c": {
+    "source": "data/processed/ablation/model_c_selection.json",
+    "run_id": "early_fusion_1__new",
+    "cv_macro_f1_mean": 0.7744187243929089
+  },
+  "uniform_tuning": {
+    "function": "dataset_split.tune_xgb",
+    "grid": [
+      {
+        "n_estimators": 100,
+        "max_depth": 2,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 2,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 2,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 3,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 3,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 3,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 4,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 4,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 100,
+        "max_depth": 4,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 2,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 2,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 2,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 4,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 4,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 200,
+        "max_depth": 4,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 2,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 2,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 2,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 3,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 3,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 3,
+        "learning_rate": 0.1
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 4,
+        "learning_rate": 0.03
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 4,
+        "learning_rate": 0.05
+      },
+      {
+        "n_estimators": 400,
+        "max_depth": 4,
+        "learning_rate": 0.1
+      }
+    ],
+    "selection": "akurasi valid (165 hari)",
+    "fit": "train (772 hari)",
+    "fixed": {
+      "eval_metric": "mlogloss",
+      "random_state": 42
+    }
+  },
+  "c_optimized": {
+    "grid": {
+      "n_estimators": [
+        100,
+        200,
+        400
+      ],
+      "max_depth": [
+        2,
+        3,
+        4
+      ],
+      "learning_rate": [
+        0.03,
+        0.05,
+        0.1
+      ],
+      "subsample": [
+        0.7,
+        1.0
+      ],
+      "colsample_bytree": [
+        0.3,
+        0.6,
+        1.0
+      ],
+      "min_child_weight": [
+        1,
+        5
+      ],
+      "reg_lambda": [
+        1,
+        10
+      ]
+    },
+    "selection": "rata-rata macro-F1 walk-forward CV (TimeSeriesSplit 5) di 937 hari train+valid, tie-break akurasi CV lalu urutan grid; fold sama dengan seleksi Model C",
+    "n_estimators_evaluation": "satu model 400 pohon per kombinasi; 100/200 dievaluasi dengan iteration_range (diverifikasi identik)",
+    "final_fit": "train (772 hari), sama dengan baris lain; test diprediksi sekali",
+    "best_params": {
+      "n_estimators": 100,
+      "max_depth": 2,
+      "learning_rate": 0.1,
+      "subsample": 1.0,
+      "colsample_bytree": 0.6,
+      "min_child_weight": 1,
+      "reg_lambda": 1
+    },
+    "cv": {
+      "n_combinations": 648,
+      "n_folds": 5,
+      "n_rows": 937,
+      "folds": [
+        {
+          "fold": 1,
+          "n_train": 157,
+          "n_eval": 156
+        },
+        {
+          "fold": 2,
+          "n_train": 313,
+          "n_eval": 156
+        },
+        {
+          "fold": 3,
+          "n_train": 469,
+          "n_eval": 156
+        },
+        {
+          "fold": 4,
+          "n_train": 625,
+          "n_eval": 156
+        },
+        {
+          "fold": 5,
+          "n_train": 781,
+          "n_eval": 156
+        }
+      ],
+      "truncation_check": {
+        "n_estimators_100": true,
+        "n_estimators_200": true
+      },
+      "seconds": 4451.0,
+      "best_cv_macro_f1_mean": 0.7843000040257072,
+      "best_cv_macro_f1_std": 0.030790897267760083,
+      "best_cv_accuracy_mean": 0.7974358974358975,
+      "best_uniform_grid_cv_macro_f1_mean": 0.7776116365256999
+    },
+    "note": "Upaya tuning lebih besar daripada A/B; perbandingan adil dengan A dan B memakai baris C (grid seragam)."
+  },
+  "early_fusion_loader": "evaluate_late_fusion.build_source_matrices (merge kiri pada tanggal, hari tanpa fitur -> 0, float32); finbert bert_path via ablation_utils.align_to_targets",
+  "feature_coverage_pct": {
+    "embedding/roberta_fulltext": 100.0,
+    "topic/top2vec": 100.0,
+    "topic/lda": 100.0,
+    "ner/entities": 100.0
+  },
+  "statistics": {
+    "mcnemar": "exact binomial two-sided (evaluate_late_fusion.mcnemar_exact)",
+    "bootstrap": "moving-block, block=10 hari, 2000 resample, CI 95%, seed 42 (indeks sama untuk semua baris & pasangan)",
+    "pairwise_delta": "second - first"
+  },
+  "verification": {
+    "A_test_accuracy": {
+      "expected_keputusan_44": 0.731,
+      "obtained": 0.730539,
+      "match_3_decimals": true
+    },
+    "B_test_accuracy": {
+      "expected_keputusan_44": 0.76,
+      "obtained": 0.766467,
+      "match_3_decimals": false
+    },
+    "leakage": {
+      "lag1_log_return_equals_shift": true,
+      "lag2_log_return_equals_shift": true,
+      "lag3_log_return_equals_shift": true,
+      "price_perturbation": [
+        {
+          "t": "2023-07-18",
+          "perturb_realized_vol": false,
+          "n_days_upto_t": 387,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        },
+        {
+          "t": "2025-03-26",
+          "perturb_realized_vol": false,
+          "n_days_upto_t": 773,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        },
+        {
+          "t": "2025-12-11",
+          "perturb_realized_vol": false,
+          "n_days_upto_t": 938,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        },
+        {
+          "t": "2025-12-11",
+          "perturb_realized_vol": true,
+          "n_days_upto_t": 938,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        },
+        {
+          "t": "2026-04-24",
+          "perturb_realized_vol": false,
+          "n_days_upto_t": 1021,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        },
+        {
+          "t": "2026-04-24",
+          "perturb_realized_vol": true,
+          "n_days_upto_t": 1021,
+          "features_upto_t_unchanged": true,
+          "features_after_t_changed": true
+        }
+      ],
+      "tfidf_svd_fit_train_only": true,
+      "news_published_before_target_cutoff": {
+        "n_articles": 6013,
+        "n_violations": 0,
+        "cutoff_hour_wib": 8
+      },
+      "bert_path_target_date_equals_news_tfidf": true,
+      "text_feature_columns_with_target_terms": {
+        "data/processed/bert_path/finbert_fulltext_features.csv": [],
+        "data/processed/head_vs_full/fulltext/roberta_fulltext_features.csv": [],
+        "data/processed/topic_modelling/top2vec/daily_topic_features.csv": [],
+        "data/processed/topic_modelling/lda/daily_topic_features.csv": [],
+        "data/processed/ner/daily_entity_features.csv": []
+      },
+      "price_lm_features_exclude_target_cols": true
+    }
+  },
+  "test_usage": "Test diprediksi sekali per baris dalam satu kali jalan, setelah semua tuning/seleksi.",
+  "limitations": [
+    "Baris C_optimized mendapat upaya tuning lebih besar; tidak dipakai untuk klaim A vs C.",
+    "Top2Vec & embedding statis dilatih transduktif di seluruh korpus oleh tim (lihat caveat evaluate_early_fusion.py); bukan kebocoran label, tetapi representasi melihat teks periode test.",
+    "Seleksi Model C memakai aturan yang diubah dua kali setelah melihat CV (model_c_selection.json)."
+  ],
+  "versions": {
+    "python": "3.14.10",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1"
+  },
+  "seconds": {
+    "A": 18.7,
+    "B": 20.1,
+    "C1": 88.2,
+    "C2": 103.5,
+    "C3": 93.4,
+    "C": 105.2,
+    "EF5_old": 91.8,
+    "C_optimized": 4455.7,
+    "leakage_checks": 8.9
+  }
+}

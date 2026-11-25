@@ -1,0 +1,5 @@
+comparison,first,second,test_accuracy_first,test_accuracy_second,delta_accuracy_second_minus_first,delta_accuracy_ci_low,delta_accuracy_ci_high,test_macro_f1_first,test_macro_f1_second,delta_macro_f1_second_minus_first,delta_macro_f1_ci_low,delta_macro_f1_ci_high,mcnemar_second_only_correct,mcnemar_first_only_correct,mcnemar_p_value,significant_alpha_0_05
+A vs B,A,B,0.730539,0.766467,0.035928,-0.005988,0.083832,0.736799,0.772239,0.035440,-0.011191,0.077887,9,3,0.145996,False
+B vs C,B,C,0.766467,0.772455,0.005988,-0.041916,0.053892,0.772239,0.776613,0.004374,-0.041896,0.057073,8,7,1.000000,False
+A vs C,A,C,0.730539,0.772455,0.041916,-0.017964,0.107784,0.736799,0.776613,0.039814,-0.020409,0.105818,14,7,0.189247,False
+EF5_old vs C,EF5_old,C,0.748503,0.772455,0.023952,-0.005988,0.065868,0.753080,0.776613,0.023533,-0.005774,0.070696,7,3,0.343750,False

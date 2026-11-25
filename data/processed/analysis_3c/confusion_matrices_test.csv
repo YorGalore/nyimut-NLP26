@@ -1,0 +1,10 @@
+model,true,pred_low,pred_medium,pred_high
+A,low,42,8,1
+A,medium,16,42,7
+A,high,0,13,38
+B,low,40,11,0
+B,medium,9,50,6
+B,high,1,12,38
+C,low,45,6,0
+C,medium,11,47,7
+C,high,1,13,37

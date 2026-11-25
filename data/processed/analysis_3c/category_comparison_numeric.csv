@@ -1,0 +1,11 @@
+variable,category,n,median,mean,U,p_value
+n_news,NLP membantu,14,9.500000,11.000000,,
+n_news,NLP menambah noise,7,8.000000,9.142857,,
+n_news,keduanya benar,115,8.000000,9.513043,,
+n_news,keduanya salah,31,10.000000,12.806452,,
+n_news,Mann-Whitney membantu vs noise,21,,,60.500000,0.442965
+text_abs_shap_C_pred_class,NLP membantu,14,1.036589,1.055488,,
+text_abs_shap_C_pred_class,NLP menambah noise,7,1.077513,1.136373,,
+text_abs_shap_C_pred_class,keduanya benar,115,1.018195,0.987140,,
+text_abs_shap_C_pred_class,keduanya salah,31,0.994187,1.022112,,
+text_abs_shap_C_pred_class,Mann-Whitney membantu vs noise,21,,,36.000000,0.360062

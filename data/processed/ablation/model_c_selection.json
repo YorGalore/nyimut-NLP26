@@ -1,0 +1,621 @@
+{
+  "script": "src/finalize_model_c.py",
+  "model_c": {
+    "run_id": "early_fusion_1__new",
+    "candidate_id": "early_fusion_1",
+    "embedding_version": "new_bert_path",
+    "embedding_file": "data/processed/bert_path/finbert_fulltext_features.csv",
+    "config": {
+      "architecture": "early_fusion",
+      "experiment": "E4_kurs_emb_topic_ner",
+      "embedding_variant": "finbert_fulltext",
+      "topic_variant": "top2vec",
+      "ner_variant": "entities",
+      "classifier": "xgboost",
+      "fusion_method": "concat_xgboost"
+    },
+    "members": [
+      [
+        "kurs",
+        "jisdor",
+        "xgboost"
+      ],
+      [
+        "embedding",
+        "finbert_fulltext__bert_path",
+        "xgboost"
+      ],
+      [
+        "topic",
+        "top2vec",
+        "xgboost"
+      ],
+      [
+        "ner",
+        "entities",
+        "xgboost"
+      ]
+    ],
+    "n_features": 1036,
+    "cv_macro_f1_mean": 0.7744187243929089,
+    "cv_macro_f1_std": 0.03367228418288818,
+    "cv_accuracy_mean": 0.7884615384615385,
+    "reason": "rata-rata macro-F1 CV tertinggi (0.7744) di antara 4 run dengan pipeline valid di model_c_cv_bert_path.csv"
+  },
+  "selection_rule": {
+    "rule": "Calon Model C hanya dari pipeline yang valid: embedding transformer jalur BERT baru (data/processed/bert_path/) atau embedding statis. Embedding transformer versi lama (text_norm_concat) tidak boleh menjadi Model C. Di antara calon sah: rata-rata macro-F1 CV tertinggi, tie-break rata-rata akurasi CV.",
+    "status": "final, dibekukan",
+    "rationale": "Tujuan ekstraksi ulang adalah mengganti embedding transformer yang cacat (dibuat dari text_norm_concat, menyimpang dari Keputusan 21-24). Versi lama hanya pembanding untuk mengukur dampak perbaikan preprocessing, bukan calon model.",
+    "rule_change_history": [
+      "1. src/select_model_c.py: CV tertinggi + aturan 1 SD -> n_features paling sedikit (hasil: late_fusion_3).",
+      "2. src/select_model_c_bert_path.py: CV tertinggi tanpa aturan 1 SD, versi lama & baru sama-sama calon (hasil: early_fusion_5__old).",
+      "3. src/finalize_model_c.py (perubahan aturan KEDUA): hanya pipeline valid. Dilakukan SETELAH melihat hasil CV, tetapi SEBELUM test dibuka. Instruksi awal langkah 4 tidak tegas soal status versi lama; aturan ini menegaskan maksud semula."
+    ]
+  },
+  "gap_to_best_cv_overall": {
+    "best_cv_overall_run_id": "early_fusion_5__old",
+    "best_cv_overall_valid_pipeline": false,
+    "best_cv_overall_macro_f1_mean": 0.7773044784346176,
+    "best_cv_overall_macro_f1_std": 0.032002263524232265,
+    "model_c_macro_f1_mean": 0.7744187243929089,
+    "model_c_macro_f1_std": 0.03367228418288818,
+    "difference": 0.0028857540417086547,
+    "note": "Selisih 0.0029 jauh di bawah SD antar-fold kedua run (0.0320 dan 0.0337); secara CV keduanya tidak dapat dibedakan."
+  },
+  "topic_note": "Model C memakai topik top2vec, bukan LDA (model topik final Keputusan 46), karena keempat model topik (lda, bertopic, dtm, top2vec) diuji sebagai varian fitur dalam pencarian early/late fusion; pemilihan varian topik mengikuti skor validasi/CV, bukan pilihan model topik final.",
+  "exploratory_findings": {
+    "file": "data/processed/ablation/model_c_cv_bert_path.csv",
+    "note": "Tabel embedding lama vs jalur BERT baru disimpan apa adanya untuk analisis eksploratif (dampak perbaikan preprocessing teks), bukan untuk seleksi.",
+    "table": [
+      {
+        "cv_rank": 1,
+        "run_id": "early_fusion_5__old",
+        "embedding_version": "old_text_norm_concat",
+        "embedding_variant": "roberta_fulltext",
+        "topic_variant": "lda",
+        "ner_variant": null,
+        "n_features": 828,
+        "cv_macro_f1_mean": 0.7773044784,
+        "cv_macro_f1_std": 0.0320022635,
+        "cv_accuracy_mean": 0.7923076923,
+        "delta_macro_f1_new_minus_old": null,
+        "valid_pipeline": false
+      },
+      {
+        "cv_rank": 2,
+        "run_id": "early_fusion_1__new",
+        "embedding_version": "new_bert_path",
+        "embedding_variant": "finbert_fulltext",
+        "topic_variant": "top2vec",
+        "ner_variant": "entities",
+        "n_features": 1036,
+        "cv_macro_f1_mean": 0.7744187244,
+        "cv_macro_f1_std": 0.0336722842,
+        "cv_accuracy_mean": 0.7884615385,
+        "delta_macro_f1_new_minus_old": 0.0061610597,
+        "valid_pipeline": true
+      },
+      {
+        "cv_rank": 3,
+        "run_id": "early_fusion_1__old",
+        "embedding_version": "old_text_norm_concat",
+        "embedding_variant": "finbert_fulltext",
+        "topic_variant": "top2vec",
+        "ner_variant": "entities",
+        "n_features": 1036,
+        "cv_macro_f1_mean": 0.7682576647,
+        "cv_macro_f1_std": 0.0442833322,
+        "cv_accuracy_mean": 0.7833333333,
+        "delta_macro_f1_new_minus_old": null,
+        "valid_pipeline": false
+      },
+      {
+        "cv_rank": 4,
+        "run_id": "late_fusion_1__old",
+        "embedding_version": "old_text_norm_concat",
+        "embedding_variant": "qwen_fulltext",
+        "topic_variant": null,
+        "ner_variant": null,
+        "n_features": 906,
+        "cv_macro_f1_mean": 0.7628348024,
+        "cv_macro_f1_std": 0.0186950751,
+        "cv_accuracy_mean": 0.7871794872,
+        "delta_macro_f1_new_minus_old": null,
+        "valid_pipeline": false
+      },
+      {
+        "cv_rank": 5,
+        "run_id": "late_fusion_3__old",
+        "embedding_version": "old_text_norm_concat",
+        "embedding_variant": "word2vec_fulltext",
+        "topic_variant": null,
+        "ner_variant": null,
+        "n_features": 112,
+        "cv_macro_f1_mean": 0.7624015843,
+        "cv_macro_f1_std": 0.0176035345,
+        "cv_accuracy_mean": 0.7871794872,
+        "delta_macro_f1_new_minus_old": null,
+        "valid_pipeline": true
+      },
+      {
+        "cv_rank": 6,
+        "run_id": "late_fusion_1__new",
+        "embedding_version": "new_bert_path",
+        "embedding_variant": "qwen_fulltext",
+        "topic_variant": null,
+        "ner_variant": null,
+        "n_features": 906,
+        "cv_macro_f1_mean": 0.7620750813,
+        "cv_macro_f1_std": 0.0236399847,
+        "cv_accuracy_mean": 0.7820512821,
+        "delta_macro_f1_new_minus_old": -0.0007597211,
+        "valid_pipeline": true
+      },
+      {
+        "cv_rank": 7,
+        "run_id": "early_fusion_5__new",
+        "embedding_version": "new_bert_path",
+        "embedding_variant": "roberta_fulltext",
+        "topic_variant": "lda",
+        "ner_variant": null,
+        "n_features": 828,
+        "cv_macro_f1_mean": 0.7590911603,
+        "cv_macro_f1_std": 0.0461350488,
+        "cv_accuracy_mean": 0.7769230769,
+        "delta_macro_f1_new_minus_old": -0.0182133181,
+        "valid_pipeline": true
+      }
+    ]
+  },
+  "candidates": [
+    "early_fusion_5",
+    "early_fusion_1",
+    "late_fusion_1",
+    "late_fusion_3"
+  ],
+  "cv_protocol": {
+    "data": "train + valid kanonis (937 hari, 2021-09-16 s.d. 2025-12-09); test tidak dimuat ke evaluasi",
+    "splitter": "sklearn TimeSeriesSplit(n_splits=5) expanding window",
+    "folds": [
+      {
+        "fold": 1,
+        "n_train": 157,
+        "n_eval": 156,
+        "train_start": "2021-09-16",
+        "train_end": "2022-06-02",
+        "eval_start": "2022-06-03",
+        "eval_end": "2023-02-21",
+        "eval_class_counts": {
+          "low": 42,
+          "medium": 60,
+          "high": 54
+        }
+      },
+      {
+        "fold": 2,
+        "n_train": 313,
+        "n_eval": 156,
+        "train_start": "2021-09-16",
+        "train_end": "2023-02-21",
+        "eval_start": "2023-02-22",
+        "eval_end": "2023-11-22",
+        "eval_class_counts": {
+          "low": 44,
+          "medium": 55,
+          "high": 57
+        }
+      },
+      {
+        "fold": 3,
+        "n_train": 469,
+        "n_eval": 156,
+        "train_start": "2021-09-16",
+        "train_end": "2023-11-22",
+        "eval_start": "2023-11-23",
+        "eval_end": "2024-08-08",
+        "eval_class_counts": {
+          "low": 49,
+          "medium": 58,
+          "high": 49
+        }
+      },
+      {
+        "fold": 4,
+        "n_train": 625,
+        "n_eval": 156,
+        "train_start": "2021-09-16",
+        "train_end": "2024-08-08",
+        "eval_start": "2024-08-09",
+        "eval_end": "2025-04-16",
+        "eval_class_counts": {
+          "low": 14,
+          "medium": 36,
+          "high": 106
+        }
+      },
+      {
+        "fold": 5,
+        "n_train": 781,
+        "n_eval": 156,
+        "train_start": "2021-09-16",
+        "train_end": "2025-04-16",
+        "eval_start": "2025-04-17",
+        "eval_end": "2025-12-09",
+        "eval_class_counts": {
+          "low": 78,
+          "medium": 31,
+          "high": 47
+        }
+      }
+    ],
+    "refit": "Konfigurasi kandidat tetap; classifier (make_classifiers(), tanpa tuning), imputer, scaler, dan untuk late fusion base model + OOF internal (TimeSeriesSplit 5 di train fold) + bobot/meta-LR dilatih ulang per fold, hanya dari bagian train fold.",
+    "labels": "volatility_class kanonis dari build_dataset() (ambang tertile di-fit di 70% kalender tertua); ambang TIDAK di-fit ulang per fold.",
+    "seed": 42
+  },
+  "bert_path": {
+    "compose": "title_body",
+    "files": {
+      "roberta_fulltext": "data/processed/bert_path/roberta_fulltext_features.csv",
+      "finbert_fulltext": "data/processed/bert_path/finbert_fulltext_features.csv",
+      "qwen_fulltext": "data/processed/bert_path/qwen_fulltext_features.csv"
+    },
+    "metadata": "data/processed/bert_path/metadata.json"
+  },
+  "limitations": [
+    "Tim sudah pernah melihat hasil test early/late/feature fusion (finalists_test.csv, baris test feature_fusion_summary.csv) sebelum seleksi ini dibuat. Skrip ini tidak membacanya, tetapi pemilihan pool kandidat (arsitektur, sumber fitur) tidak sepenuhnya buta test.",
+    "Finalis dipilih dari ribuan kandidat di 165 hari validasi yang sama; validasi itu juga termasuk di fold CV terakhir, sehingga skor CV fold 5 tidak independen dari seleksi finalis.",
+    "Fitur teks unsupervised (embedding, topic, temporal) dibuat teman di seluruh korpus (transduktif); hanya model supervised yang di-fit ulang per fold.",
+    "Ambang kelas volatility di-fit dari 772 hari train kanonis, sehingga fold awal memakai label yang ambangnya ikut dipengaruhi periode setelah fold tersebut.",
+    "Fold awal kecil (train pertama ~157 hari); SD antar-fold juga mencerminkan perubahan rezim pasar.",
+    "Hanya top-2 kandidat per arsitektur (early & late) menurut CV yang diekstrak ulang dengan teks jalur BERT, karena keterbatasan komputasi; kandidat lain tetap memakai embedding lama (text_norm_concat).",
+    "Embedding headline tidak diekstrak ulang."
+  ],
+  "previous_selection": {
+    "script": "src/select_model_c_bert_path.py",
+    "model_c": {
+      "run_id": "early_fusion_5__old",
+      "candidate_id": "early_fusion_5",
+      "embedding_version": "old_text_norm_concat",
+      "embedding_file": "data/processed/head_vs_full/fulltext/roberta_fulltext_features.csv",
+      "config": {
+        "architecture": "early_fusion",
+        "experiment": "E2_kurs_emb_topic",
+        "embedding_variant": "roberta_fulltext",
+        "topic_variant": "lda",
+        "ner_variant": null,
+        "classifier": "xgboost",
+        "fusion_method": "concat_xgboost"
+      },
+      "members": [
+        [
+          "kurs",
+          "jisdor",
+          "xgboost"
+        ],
+        [
+          "embedding",
+          "roberta_fulltext",
+          "xgboost"
+        ],
+        [
+          "topic",
+          "lda",
+          "xgboost"
+        ]
+      ],
+      "n_features": 828,
+      "cv_macro_f1_mean": 0.7773044784346176,
+      "cv_macro_f1_std": 0.032002263524232265,
+      "cv_accuracy_mean": 0.7923076923076923,
+      "reason": "rata-rata macro-F1 CV tertinggi (0.7773) dari 7 run di model_c_cv_bert_path.csv"
+    },
+    "selection_rule": "Model C = rata-rata macro-F1 CV tertinggi di antara 4 kandidat x versi embedding (tanpa aturan 1 SD / fitur paling sedikit)",
+    "candidates": [
+      "early_fusion_5",
+      "early_fusion_1",
+      "late_fusion_1",
+      "late_fusion_3"
+    ],
+    "n_runs": 7,
+    "cv_protocol": {
+      "data": "train + valid kanonis (937 hari, 2021-09-16 s.d. 2025-12-09); test tidak dimuat ke evaluasi",
+      "splitter": "sklearn TimeSeriesSplit(n_splits=5) expanding window",
+      "folds": [
+        {
+          "fold": 1,
+          "n_train": 157,
+          "n_eval": 156,
+          "train_start": "2021-09-16",
+          "train_end": "2022-06-02",
+          "eval_start": "2022-06-03",
+          "eval_end": "2023-02-21",
+          "eval_class_counts": {
+            "low": 42,
+            "medium": 60,
+            "high": 54
+          }
+        },
+        {
+          "fold": 2,
+          "n_train": 313,
+          "n_eval": 156,
+          "train_start": "2021-09-16",
+          "train_end": "2023-02-21",
+          "eval_start": "2023-02-22",
+          "eval_end": "2023-11-22",
+          "eval_class_counts": {
+            "low": 44,
+            "medium": 55,
+            "high": 57
+          }
+        },
+        {
+          "fold": 3,
+          "n_train": 469,
+          "n_eval": 156,
+          "train_start": "2021-09-16",
+          "train_end": "2023-11-22",
+          "eval_start": "2023-11-23",
+          "eval_end": "2024-08-08",
+          "eval_class_counts": {
+            "low": 49,
+            "medium": 58,
+            "high": 49
+          }
+        },
+        {
+          "fold": 4,
+          "n_train": 625,
+          "n_eval": 156,
+          "train_start": "2021-09-16",
+          "train_end": "2024-08-08",
+          "eval_start": "2024-08-09",
+          "eval_end": "2025-04-16",
+          "eval_class_counts": {
+            "low": 14,
+            "medium": 36,
+            "high": 106
+          }
+        },
+        {
+          "fold": 5,
+          "n_train": 781,
+          "n_eval": 156,
+          "train_start": "2021-09-16",
+          "train_end": "2025-04-16",
+          "eval_start": "2025-04-17",
+          "eval_end": "2025-12-09",
+          "eval_class_counts": {
+            "low": 78,
+            "medium": 31,
+            "high": 47
+          }
+        }
+      ],
+      "refit": "Konfigurasi kandidat tetap; classifier (make_classifiers(), tanpa tuning), imputer, scaler, dan untuk late fusion base model + OOF internal (TimeSeriesSplit 5 di train fold) + bobot/meta-LR dilatih ulang per fold, hanya dari bagian train fold.",
+      "labels": "volatility_class kanonis dari build_dataset() (ambang tertile di-fit di 70% kalender tertua); ambang TIDAK di-fit ulang per fold.",
+      "seed": 42
+    },
+    "bert_path": {
+      "compose": "title_body",
+      "files": {
+        "roberta_fulltext": "data/processed/bert_path/roberta_fulltext_features.csv",
+        "finbert_fulltext": "data/processed/bert_path/finbert_fulltext_features.csv",
+        "qwen_fulltext": "data/processed/bert_path/qwen_fulltext_features.csv"
+      },
+      "metadata": "data/processed/bert_path/metadata.json"
+    },
+    "limitations": [
+      "Tim sudah pernah melihat hasil test early/late/feature fusion (finalists_test.csv, baris test feature_fusion_summary.csv) sebelum seleksi ini dibuat. Skrip ini tidak membacanya, tetapi pemilihan pool kandidat (arsitektur, sumber fitur) tidak sepenuhnya buta test.",
+      "Finalis dipilih dari ribuan kandidat di 165 hari validasi yang sama; validasi itu juga termasuk di fold CV terakhir, sehingga skor CV fold 5 tidak independen dari seleksi finalis.",
+      "Fitur teks unsupervised (embedding, topic, temporal) dibuat teman di seluruh korpus (transduktif); hanya model supervised yang di-fit ulang per fold.",
+      "Ambang kelas volatility di-fit dari 772 hari train kanonis, sehingga fold awal memakai label yang ambangnya ikut dipengaruhi periode setelah fold tersebut.",
+      "Fold awal kecil (train pertama ~157 hari); SD antar-fold juga mencerminkan perubahan rezim pasar.",
+      "Hanya top-2 kandidat per arsitektur (early & late) menurut CV yang diekstrak ulang dengan teks jalur BERT, karena keterbatasan komputasi; kandidat lain tetap memakai embedding lama (text_norm_concat).",
+      "Embedding headline tidak diekstrak ulang."
+    ],
+    "previous_selection": {
+      "script": "src/select_model_c.py",
+      "model_c": {
+        "candidate_id": "late_fusion_3",
+        "config": {
+          "architecture": "late_fusion",
+          "experiment": "E1_kurs_emb",
+          "embedding_variant": "word2vec_fulltext",
+          "topic_variant": null,
+          "ner_variant": null,
+          "temporal_variant": null,
+          "classifier": "kurs=xgboost|embedding=xgboost",
+          "fusion_method": "meta_lr"
+        },
+        "members": [
+          [
+            "kurs",
+            "jisdor",
+            "xgboost"
+          ],
+          [
+            "embedding",
+            "word2vec_fulltext",
+            "xgboost"
+          ]
+        ],
+        "n_features": 112,
+        "cv_macro_f1_mean": 0.7624015843177121,
+        "cv_macro_f1_std": 0.017603534476394792,
+        "cv_accuracy_mean": 0.787179487179487,
+        "best_by_cv_mean": "early_fusion_5",
+        "best_cv_macro_f1_mean": 0.7773044784346176,
+        "best_cv_macro_f1_std": 0.032002263524232265,
+        "equivalence_threshold": 0.7453022149103853,
+        "equivalent_candidates": [
+          "early_fusion_5",
+          "feature_fusion_temporal_2",
+          "feature_fusion_temporal_3",
+          "early_fusion_1",
+          "early_fusion_2",
+          "early_fusion_3",
+          "early_fusion_4",
+          "feature_fusion_temporal_1",
+          "late_fusion_1",
+          "late_fusion_3",
+          "late_fusion_5",
+          "late_fusion_4"
+        ],
+        "reason": "late_fusion_3 = kandidat dengan n_features paling sedikit di antara 12 kandidat yang rata-rata macro-F1 CV-nya >= 0.7453 (terbaik early_fusion_5 0.7773 - 1 SD 0.0320)."
+      },
+      "model_c2_transformer": {
+        "candidate_id": "early_fusion_3",
+        "config": {
+          "architecture": "early_fusion",
+          "experiment": "E1_kurs_emb",
+          "embedding_variant": "finbert_fulltext",
+          "topic_variant": null,
+          "ner_variant": null,
+          "temporal_variant": null,
+          "classifier": "xgboost",
+          "fusion_method": "concat_xgboost"
+        },
+        "members": [
+          [
+            "kurs",
+            "jisdor",
+            "xgboost"
+          ],
+          [
+            "embedding",
+            "finbert_fulltext",
+            "xgboost"
+          ]
+        ],
+        "n_features": 778,
+        "cv_macro_f1_mean": 0.765707419961713,
+        "cv_macro_f1_std": 0.050619611305103375,
+        "cv_accuracy_mean": 0.7820512820512819,
+        "best_by_cv_mean": "early_fusion_5",
+        "best_cv_macro_f1_mean": 0.7773044784346176,
+        "best_cv_macro_f1_std": 0.032002263524232265,
+        "equivalence_threshold": 0.7453022149103853,
+        "equivalent_candidates": [
+          "early_fusion_5",
+          "feature_fusion_temporal_2",
+          "feature_fusion_temporal_3",
+          "early_fusion_1",
+          "early_fusion_3",
+          "early_fusion_4",
+          "feature_fusion_temporal_1",
+          "late_fusion_1"
+        ],
+        "reason": "early_fusion_3 = kandidat dengan n_features paling sedikit di antara 8 kandidat yang rata-rata macro-F1 CV-nya >= 0.7453 (terbaik early_fusion_5 0.7773 - 1 SD 0.0320)."
+      },
+      "n_candidates_in_validation_files": {
+        "early_fusion": 240,
+        "late_fusion": 3888,
+        "feature_fusion_temporal_validation": 48
+      },
+      "n_finalists": 13,
+      "n_finalists_evaluated_in_cv": 13,
+      "finalist_rule": {
+        "pools": {
+          "early_fusion": "top-5",
+          "late_fusion": "top-5",
+          "feature_fusion_temporal": "top-3 dari ['E5_jisdor_plus_embedding_temporal', 'E6_jisdor_plus_embedding_topic_temporal', 'E7_jisdor_plus_embedding_ner_temporal', 'E8_jisdor_plus_embedding_topic_ner_temporal']"
+        },
+        "ranking": "val macro-F1 desc, tie-break val accuracy desc, lalu val log-loss asc (NaN di akhir; feature fusion tidak punya log-loss)",
+        "validation_filter": "interpretasi 2, satu arah: per arsitektur, lolos jika hari benar validasi >= hari benar #1 arsitektur itu - 1. Kandidat yang lebih akurat dari #1 tidak dibuang. Filter hanya menyaring finalis ke CV; Model C ditetapkan dari CV."
+      },
+      "cv_protocol": {
+        "data": "train + valid kanonis (937 hari, 2021-09-16 s.d. 2025-12-09); test tidak dimuat ke evaluasi",
+        "splitter": "sklearn TimeSeriesSplit(n_splits=5) expanding window",
+        "folds": [
+          {
+            "fold": 1,
+            "n_train": 157,
+            "n_eval": 156,
+            "train_start": "2021-09-16",
+            "train_end": "2022-06-02",
+            "eval_start": "2022-06-03",
+            "eval_end": "2023-02-21",
+            "eval_class_counts": {
+              "low": 42,
+              "medium": 60,
+              "high": 54
+            }
+          },
+          {
+            "fold": 2,
+            "n_train": 313,
+            "n_eval": 156,
+            "train_start": "2021-09-16",
+            "train_end": "2023-02-21",
+            "eval_start": "2023-02-22",
+            "eval_end": "2023-11-22",
+            "eval_class_counts": {
+              "low": 44,
+              "medium": 55,
+              "high": 57
+            }
+          },
+          {
+            "fold": 3,
+            "n_train": 469,
+            "n_eval": 156,
+            "train_start": "2021-09-16",
+            "train_end": "2023-11-22",
+            "eval_start": "2023-11-23",
+            "eval_end": "2024-08-08",
+            "eval_class_counts": {
+              "low": 49,
+              "medium": 58,
+              "high": 49
+            }
+          },
+          {
+            "fold": 4,
+            "n_train": 625,
+            "n_eval": 156,
+            "train_start": "2021-09-16",
+            "train_end": "2024-08-08",
+            "eval_start": "2024-08-09",
+            "eval_end": "2025-04-16",
+            "eval_class_counts": {
+              "low": 14,
+              "medium": 36,
+              "high": 106
+            }
+          },
+          {
+            "fold": 5,
+            "n_train": 781,
+            "n_eval": 156,
+            "train_start": "2021-09-16",
+            "train_end": "2025-04-16",
+            "eval_start": "2025-04-17",
+            "eval_end": "2025-12-09",
+            "eval_class_counts": {
+              "low": 78,
+              "medium": 31,
+              "high": 47
+            }
+          }
+        ],
+        "refit": "Konfigurasi kandidat tetap; classifier (make_classifiers(), tanpa tuning), imputer, scaler, dan untuk late fusion base model + OOF internal (TimeSeriesSplit 5 di train fold) + bobot/meta-LR dilatih ulang per fold, hanya dari bagian train fold.",
+        "labels": "volatility_class kanonis dari build_dataset() (ambang tertile di-fit di 70% kalender tertua); ambang TIDAK di-fit ulang per fold.",
+        "seed": 42
+      },
+      "selection_rule": "Model C = rata-rata macro-F1 CV tertinggi; kandidat dengan rata-rata >= terbaik - 1 SD antar-fold (SD kandidat terbaik) dianggap setara, lalu dipilih n_features paling sedikit (tie-break: rata-rata macro-F1 CV). C2 = aturan sama, hanya kandidat embedding transformer (finbert/roberta/qwen).",
+      "n_features_definition": "jumlah kolom matriks input; late fusion = jumlah kolom semua sumber yang digabung",
+      "limitations": [
+        "Tim sudah pernah melihat hasil test early/late/feature fusion (finalists_test.csv, baris test feature_fusion_summary.csv) sebelum seleksi ini dibuat. Skrip ini tidak membacanya, tetapi pemilihan pool kandidat (arsitektur, sumber fitur) tidak sepenuhnya buta test.",
+        "Finalis dipilih dari ribuan kandidat di 165 hari validasi yang sama; validasi itu juga termasuk di fold CV terakhir, sehingga skor CV fold 5 tidak independen dari seleksi finalis.",
+        "Fitur teks unsupervised (embedding, topic, temporal) dibuat teman di seluruh korpus (transduktif); hanya model supervised yang di-fit ulang per fold.",
+        "Ambang kelas volatility di-fit dari 772 hari train kanonis, sehingga fold awal memakai label yang ambangnya ikut dipengaruhi periode setelah fold tersebut.",
+        "Fold awal kecil (train pertama ~157 hari); SD antar-fold juga mencerminkan perubahan rezim pasar."
+      ],
+      "environment_note": "Dilatih ulang di .venv sekarang; skor CV tidak bergantung pada skor XGBoost di CSV lama.",
+      "runtime_seconds": 394.4
+    },
+    "runtime_seconds": 315.1,
+    "shared_late_base_model_seconds": 240.9
+  }
+}

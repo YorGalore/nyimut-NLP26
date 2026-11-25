@@ -1,0 +1,4 @@
+variable,n,spearman_rho,p_value,p_bh,significant_bh_0_05
+n_news,772,0.032489,0.367339,0.367339,False
+mean_lm_polarity,772,0.038822,0.281332,0.367339,False
+dominant_topic_share,772,-0.044252,0.219394,0.367339,False

@@ -1,0 +1,10 @@
+block,n_columns,class,mean_abs_shap_sum
+price,10,high,2.443422
+price,10,low,3.243105
+price,10,medium,1.130508
+lm,3,high,0.264724
+lm,3,low,0.083432
+lm,3,medium,0.235283
+tfidf_svd,20,high,0.961564
+tfidf_svd,20,low,0.925618
+tfidf_svd,20,medium,0.908584

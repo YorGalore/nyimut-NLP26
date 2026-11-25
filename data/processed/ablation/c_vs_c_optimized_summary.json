@@ -1,0 +1,43 @@
+{
+  "params": {
+    "C": {
+      "n_estimators": 100,
+      "max_depth": 3,
+      "learning_rate": 0.05
+    },
+    "C_optimized": {
+      "n_estimators": 100,
+      "max_depth": 2,
+      "learning_rate": 0.1,
+      "subsample": 1.0,
+      "colsample_bytree": 0.6,
+      "min_child_weight": 1,
+      "reg_lambda": 1
+    }
+  },
+  "proba_identical": false,
+  "max_abs_diff": 0.2742135524749756,
+  "max_abs_diff_date": "2026-08-18",
+  "mean_abs_diff": 0.03400235250592232,
+  "n_days_max_abs_diff_gt_0_1": 25,
+  "n_test_days": 167,
+  "n_days_label_differs": 9,
+  "label_differs_only_C_correct": 4,
+  "label_differs_only_C_optimized_correct": 4,
+  "label_differs_both_wrong": 1,
+  "correct_days": {
+    "C": 129,
+    "C_optimized": 129
+  },
+  "dates_label_differs": [
+    "2026-01-27",
+    "2026-01-29",
+    "2026-02-23",
+    "2026-05-05",
+    "2026-05-12",
+    "2026-06-09",
+    "2026-08-10",
+    "2026-08-18",
+    "2026-08-21"
+  ]
+}

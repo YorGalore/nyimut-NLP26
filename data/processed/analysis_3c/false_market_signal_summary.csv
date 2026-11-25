@@ -1,0 +1,2 @@
+n_test_days,n_naive_wrong,n_A_wrong_direction,n_flagged,n_flagged_both_conditions,flagged_corrected_by_A,naive_wrong_corrected_by_A,A_wrong_direction_corrected_by_A,flagged_corrected_by_B,naive_wrong_corrected_by_B,A_wrong_direction_corrected_by_B,flagged_corrected_by_C,naive_wrong_corrected_by_C,A_wrong_direction_corrected_by_C
+167,48,39,65,22,20,20,0,26,23,8,31,24,12

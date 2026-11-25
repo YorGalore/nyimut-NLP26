@@ -831,3 +831,183 @@ Normalisasi `news_density` pada keputusan 18 memperhitungkan panjang jendela wak
 ### Batas Penggunaan Data
 
 Test disimpan untuk evaluasi akhir dan tidak digunakan untuk menentukan fitur, normalisasi, atau parameter model. Transformasi yang mempelajari parameter dari data, seperti scaler dan TF-IDF, di-fit hanya pada train, kemudian diterapkan pada valid dan test.
+
+---
+
+## 46. Finalisasi Fitur Topik LDA
+
+### Keputusan
+`data/processed/topic_modelling/features/selected_model_daily_topic_features.csv` dibuat ulang dari model **LDA** dengan memanggil `extract_daily_feature_files(loaded, "lda")` di `src/topic_modelling/evaluate.py`, tanpa menjalankan `main()`.
+
+- Hasil: 1.202 baris × 37 kolom (kolom `model` = `lda`).
+- Nilainya sama dengan `lda_daily_topic_features.csv` (selisih numerik maksimum 4,4 × 10⁻¹⁶; hanya berbeda format penulisan float).
+- `selected_model.json` tidak berubah (`selected_model` = `lda`, `selection_type` = `manual_final_selection`).
+- Lima file lain di folder `features/` tidak diubah.
+
+### Alasan
+- Versi sebelumnya berisi fitur **Top2Vec** (1.202 × 141, kolom `model` = `top2vec`), sehingga tidak konsisten dengan `selected_model.json` yang menetapkan LDA sebagai model final.
+- `main()` tidak dijalankan karena `gensim` tidak terpasang di lingkungan saat ini, dan `main()` akan menimpa `selection_type` di `selected_model.json`.
+
+### Alternatif yang Tidak Dipilih
+- Menjalankan ulang `main()`: ditolak karena alasan di atas.
+- Mengubah `selected_model.json` menjadi Top2Vec: ditolak karena LDA sudah ditetapkan sebagai model topik final.
+
+### Konsekuensi
+- Tidak ada skrip di `src/` yang membaca file ini. Evaluasi early, late, dan feature fusion membaca `data/processed/topic_modelling/<model>/daily_topic_features.csv` untuk keempat model topik (LDA, BERTopic, DTM, Top2Vec) sebagai **varian fitur**. Regenerasi ini tidak mengubah hasil fusion mana pun.
+- Karena itu, Model C (Keputusan 47) dapat memakai varian topik selain LDA.
+
+---
+
+## 47. Aturan Seleksi Model C
+
+### Keputusan
+**Model C = `early_fusion_1` dengan embedding jalur BERT baru** (`run_id` `early_fusion_1__new`):
+
+| Blok | Sumber | Kolom |
+|---|---|---|
+| Harga | `PRICE_FEATURES` (Keputusan 37) | 10 |
+| Embedding | `finbert_fulltext`, `data/processed/bert_path/finbert_fulltext_features.csv` | 768 |
+| Topik | Top2Vec | 204 |
+| NER | `daily_entity_features.csv` | 54 |
+| **Total** | early fusion (concat), XGBoost | **1.036** |
+
+Macro-F1 walk-forward CV: **0,7744 ± 0,0337** (akurasi CV 0,7885).
+
+**Aturan final (dibekukan):** calon Model C hanya berasal dari pipeline yang valid, yaitu embedding transformer jalur BERT baru atau embedding statis. Embedding transformer versi lama (dari `text_norm_concat`) tidak boleh menjadi Model C dan hanya dipakai sebagai pembanding. Di antara calon yang sah, dipilih rata-rata macro-F1 CV tertinggi, dengan tie-break akurasi CV.
+
+**Protokol CV** (sama untuk semua tahap): 937 hari train + valid kanonis (16-09-2021 s.d. 09-12-2025), `TimeSeriesSplit(5)` dengan expanding window (train fold pertama 157 hari, tiap fold evaluasi 156 hari). Konfigurasi kandidat tetap. Imputer, scaler, classifier, serta OOF dan meta-LR late fusion di-fit hanya di bagian train fold. Test tidak dimuat.
+
+**Finalis:** 13 kandidat dari file validasi yang sudah ada:
+- top-5 early fusion (dari 240 kandidat);
+- top-5 late fusion (dari 3.888 kandidat);
+- top-3 feature fusion temporal E5–E8 (dari 48).
+
+Peringkat memakai macro-F1 validasi. Semua 13 kandidat lolos filter "≤ 1 hari benar di bawah #1 arsitektur" dan dievaluasi dengan CV.
+
+### Riwayat Aturan
+1. **Aturan awal** (`src/select_model_c.py`): CV tertinggi, lalu kandidat dengan rata-rata ≥ (terbaik − 1 SD antar-fold) dianggap setara, dan dipilih yang `n_features`-nya paling sedikit. Kandidat terbaik CV adalah `early_fusion_5` (0,7773 ± 0,0320), sehingga ambangnya 0,7453. Sebanyak 12 dari 13 kandidat lolos ambang. Hasilnya `late_fusion_3`: kurs + Word2Vec fulltext, meta-LR, 112 fitur, 0,7624 ± 0,0176.
+2. **Perubahan pertama** (`src/select_model_c_bert_path.py`): embedding transformer lama dibuat dari `text_norm_concat` (teks jalur TF-IDF), sehingga menyimpang dari Keputusan 21–24. Embedding diekstrak ulang dengan jalur BERT (`src/bert_text.py`, `src/extract_bert_embeddings.py`):
+   - teks: judul + body, dengan description hanya sebagai fallback bila body kosong;
+   - chunk 512 token dengan overlap 50 (Keputusan 24);
+   - mean pooling token konten, rata-rata antar-chunk, lalu rata-rata antar-artikel per `target_date`;
+   - model float32.
+
+   Ekstraksi ulang dilakukan untuk top-2 early dan top-2 late menurut CV. Aturan diganti menjadi CV tertinggi tanpa aturan 1 SD, dengan versi lama dan baru sama-sama menjadi calon. Hasilnya `early_fusion_5__old` (0,7773).
+3. **Perubahan kedua (final)** (`src/finalize_model_c.py`): aturan pipeline valid di atas. Perubahan ini dilakukan **setelah melihat hasil CV, tetapi sebelum test dibuka**. Instruksi pada perubahan pertama tidak tegas soal status versi lama; aturan final menegaskan maksud semula ekstraksi ulang, yaitu mengganti embedding yang cacat.
+
+### Temuan Eksploratif: Embedding Lama vs Jalur BERT (CV, 937 hari)
+
+| Kandidat | Embedding | Fitur | Macro-F1 lama | Macro-F1 baru | Δ baru − lama |
+|---|---|---|---|---|---|
+| early_fusion_5 (E2 kurs + emb + LDA) | RoBERTa | 828 | 0,7773 ± 0,0320 | 0,7591 ± 0,0461 | −0,0182 |
+| early_fusion_1 (E4 kurs + emb + Top2Vec + NER) | FinBERT | 1.036 | 0,7683 ± 0,0443 | 0,7744 ± 0,0337 | +0,0062 |
+| late_fusion_1 (E1 kurs + emb) | Qwen2.5-0.5B | 906 | 0,7628 ± 0,0187 | 0,7621 ± 0,0236 | −0,0008 |
+| late_fusion_3 (E1 kurs + emb, meta-LR) | Word2Vec (statis) | 112 | 0,7624 ± 0,0176 | – | – |
+
+Sumber: `data/processed/ablation/model_c_cv_bert_path.csv`. Tabel ini disimpan apa adanya untuk analisis eksploratif dan tidak dipakai untuk seleksi.
+
+### Alasan
+- Tujuan ekstraksi ulang adalah mengganti embedding transformer yang cacat. Versi lama hanya pembanding untuk mengukur dampak perbaikan preprocessing.
+- CV walk-forward di 937 hari dipakai sebagai pengganti skor validasi tunggal, karena finalis dipilih dari ribuan kandidat di 165 hari validasi yang sama sehingga skor validasi maksimumnya bias ke atas.
+
+### Alternatif yang Tidak Dipilih
+- **`early_fusion_5` dengan RoBERTa lama** (CV tertinggi, 0,7773 ± 0,0320): ditolak karena embedding-nya berasal dari pipeline yang cacat. Selisihnya dengan Model C hanya 0,0029, jauh di bawah SD antar-fold kedua model (0,0320 dan 0,0337), sehingga secara CV keduanya tidak dapat dibedakan.
+- **`late_fusion_3`** (hasil aturan awal): tidak dipakai setelah aturan diganti pada perubahan pertama.
+
+### Konsekuensi
+- Model C memakai **Top2Vec, bukan LDA** (model topik final Keputusan 46), karena keempat model topik diuji sebagai varian fitur dalam pencarian early/late fusion. Varian topik mengikuti skor validasi/CV, bukan pilihan model topik final.
+- Aturan seleksi berubah dua kali setelah hasil CV terlihat. Test belum dibuka pada kedua perubahan, tetapi seleksi ini tidak sepenuhnya bebas dari pengaruh hasil CV.
+- Tim sudah pernah melihat hasil test early/late/feature fusion (`finalists_test.csv`) sebelum seleksi ini. Skrip seleksi tidak membacanya, tetapi pembentukan pool kandidat tidak sepenuhnya buta test.
+- Validasi 165 hari ikut menjadi bagian fold CV terakhir, sehingga skor fold 5 tidak independen dari pemilihan finalis.
+- Hanya top-2 kandidat per arsitektur yang diekstrak ulang. Kandidat lain dan embedding headline tetap memakai embedding lama.
+- Pertanyaan terbuka: Keputusan 23 menyebut 454 artikel tanpa body, sedangkan `src/bert_text.py` menemukan 343 (341 memakai description sebagai fallback, 2 hanya judul) dari 6.013 artikel. Selisih ini dicatat di `data/processed/bert_path/metadata.json` dan belum diselidiki.
+
+---
+
+## 48. Protokol dan Hasil Ablasi
+
+### Keputusan
+Ablasi akhir dijalankan dengan `src/ablation.py`. Semua baris dievaluasi di test **sekali, dalam satu kali jalan**, setelah seluruh tuning dan seleksi selesai.
+
+**Protokol seragam:**
+- Split kanonis 772 / 165 / 167 hari (Keputusan 35). Hari dan label early fusion di-assert identik dengan `build_dataset()`.
+- Semua model XGBoost memakai `tune_xgb()` + `XGB_GRID` (27 kombinasi, Keputusan 41): fit di train, pilih dengan akurasi valid, `random_state=42`.
+- Loader early fusion: `build_source_matrices()` (merge kiri pada tanggal; hari tanpa fitur → 0).
+
+**Baris:**
+
+| Baris | Isi |
+|---|---|
+| naive | kelas kemarin (Keputusan 36) |
+| A | XGBoost harga (`PRICE_FEATURES`) |
+| B | XGBoost harga + LM + TF-IDF (SVD 20); TF-IDF/SVD di-fit di train, logika disalin dari `train_combined.py` |
+| C1 | harga + FinBERT jalur BERT |
+| C2 | C1 + Top2Vec |
+| C3 | C1 + NER |
+| C | C1 + Top2Vec + NER (Model C, Keputusan 47) |
+| C_optimized | fitur C dengan grid diperluas (lihat bawah) |
+| EF5_old | pembanding sekunder, **bukan Model C**: harga + RoBERTa lama + LDA, protokol tuning sama dengan C |
+
+**C_optimized:**
+- Grid: `XGB_GRID` × `subsample` {0,7; 1,0} × `colsample_bytree` {0,3; 0,6; 1,0} × `min_child_weight` {1; 5} × `reg_lambda` {1; 10} = 648 kombinasi. Grid ini mencakup grid seragam pada nilai default.
+- Seleksi dengan walk-forward CV 5 fold di 937 hari train + valid, memakai fold yang sama dengan seleksi Model C (rata-rata macro-F1, tie-break akurasi).
+- Fit akhir di 772 hari train, sama dengan baris lain.
+- Hasil: CV macro-F1 terbaik 0,7843 ± 0,0308 (grid seragam terbaik di CV: 0,7776), dengan parameter `n_estimators` 100, `max_depth` 2, `learning_rate` 0,1, `colsample_bytree` 0,6, `subsample` 1,0, `min_child_weight` 1, `reg_lambda` 1.
+
+**Statistik:** McNemar exact dan moving-block bootstrap CI 95% (blok 10 hari, 2.000 resample, seed 42, indeks yang sama untuk semua baris). Delta pairwise = model kedua − model pertama.
+
+### Hasil (test 167 hari: low 51, medium 65, high 51)
+
+| Baris | Fitur | Akurasi valid | Akurasi test (hari benar) | CI 95% akurasi | Macro-F1 test | McNemar vs naive (model saja / naive saja, p) |
+|---|---|---|---|---|---|---|
+| naive | 1 | 0,727 | 0,713 (119) | 0,629–0,766 | 0,715 | – |
+| A | 10 | 0,806 | 0,731 (122) | 0,641–0,790 | 0,737 | 20 / 17, p = 0,743 |
+| B | 33 | 0,812 | 0,766 (128) | 0,694–0,820 | 0,772 | 23 / 14, p = 0,188 |
+| C1 | 778 | 0,788 | 0,760 (127) | 0,695–0,808 | 0,765 | 22 / 14, p = 0,243 |
+| C2 | 982 | 0,800 | 0,754 (126) | 0,683–0,808 | 0,760 | 22 / 15, p = 0,324 |
+| C3 | 832 | 0,788 | 0,760 (127) | 0,695–0,808 | 0,765 | 22 / 14, p = 0,243 |
+| **C** | 1.036 | 0,800 | **0,772 (129)** | 0,695–0,832 | 0,777 | 24 / 14, p = 0,143 |
+| C_optimized | 1.036 | 0,782 | 0,772 (129) | 0,689–0,832 | 0,777 | 24 / 14, p = 0,143 |
+| EF5_old | 828 | 0,800 | 0,749 (125) | 0,665–0,802 | 0,753 | 21 / 15, p = 0,405 |
+
+**Pairwise:**
+
+| Perbandingan | Δ akurasi | CI 95% Δ akurasi | Δ macro-F1 | CI 95% Δ macro-F1 | Hanya kedua benar / hanya pertama benar | p McNemar |
+|---|---|---|---|---|---|---|
+| A vs B | +0,036 | −0,006 s.d. 0,084 | +0,035 | −0,011 s.d. 0,078 | 9 / 3 | 0,146 |
+| B vs C | +0,006 | −0,042 s.d. 0,054 | +0,004 | −0,042 s.d. 0,057 | 8 / 7 | 1,000 |
+| A vs C | +0,042 | −0,018 s.d. 0,108 | +0,040 | −0,020 s.d. 0,106 | 14 / 7 | 0,189 |
+| EF5_old vs C | +0,024 | −0,006 s.d. 0,066 | +0,024 | −0,006 s.d. 0,071 | 7 / 3 | 0,344 |
+
+Sumber: `data/processed/ablation/ablation_matrix.csv`, `ablation_pairwise.csv`, `ablation_test_predictions.csv`, `ablation_c_optimized_cv.csv`, `ablation_metadata.json`, `c_vs_c_optimized_summary.json`.
+
+### Interpretasi
+- Model C memiliki akurasi test tertinggi (0,772), tetapi **tidak ada selisih yang signifikan** pada α = 0,05. Semua CI delta memuat nol. C hanya unggul satu hari atas B (8 / 7 hari berbeda).
+- Arah EF5_old → C (+4 hari) sejalan dengan dugaan bahwa perbaikan preprocessing teks membantu, tetapi CI-nya memuat nol. Perbandingan ini juga mengubah embedding (RoBERTa → FinBERT) dan topik (LDA → Top2Vec) sekaligus, jadi bukan efek preprocessing saja.
+- **C3 memberi prediksi yang sama persis dengan C1 di semua 167 hari.** Pada hyperparameter terpilih (100 pohon, depth 2, lr 0,03), tidak ada split pohon yang memakai fitur NER (importance blok NER = 0).
+- **C_optimized dan C adalah dua model berbeda** dengan akurasi test kebetulan sama:
+  - Probabilitas prediksi tidak identik: selisih absolut maksimum 0,274 (2026-08-18), rata-rata 0,034, dan 25 dari 167 hari memiliki selisih > 0,1.
+  - Label berbeda di 9 hari: C saja benar 4 hari, C_optimized saja benar 4 hari, keduanya salah 1 hari.
+  - Tuning yang lebih luas menaikkan CV (0,7843 vs 0,7776), tetapi tidak menaikkan akurasi test.
+- Perbandingan yang adil dengan A dan B memakai baris **C (grid seragam)**, bukan C_optimized.
+- **Importance per blok tidak dipakai sebagai ukuran kontribusi.** Importance per blok adalah jumlah `feature_importances_` XGBoost atas kolom-kolom blok, dan nilainya bias terhadap jumlah kolom. Sebagai contoh, blok embedding (768 kolom) mendapat 0,793 di C, sedangkan harga (10 kolom) 0,126. Kontribusi sumber dinilai dari selisih antar baris ablasi.
+
+### Verifikasi
+- **A = 0,731**: cocok dengan Keputusan 44.
+- **B = 0,766**, bukan 0,760 seperti di Keputusan 44 (selisih satu hari; akurasi valid tetap 0,812). `train_combined.py` asli tanpa edit juga menghasilkan 0,766 di lingkungan saat ini (pandas 3.1.1, numpy 2.5.5, scikit-learn 1.9.1, xgboost 3.4.1), dengan McNemar B vs A 9 / 3, p = 0,146. Jadi angka 0,760 di Keputusan 44 berasal dari versi library tim sebelumnya yang tidak tercatat. Keputusan 44 tidak diubah; angka di keputusan ini memakai lingkungan saat ini.
+- **Determinisme:** `ablation.py` dijalankan dua kali (kedua ke `data/processed/ablation/rerun_check/`). `ablation_pairwise.csv`, `ablation_test_predictions.csv`, dan `ablation_c_optimized_cv.csv` identik byte. `ablation_matrix.csv` dan metadata hanya berbeda di kolom waktu.
+- **Kebocoran:**
+  - Fitur harga/LM hari ≤ t tidak berubah saat return hari t dan sesudahnya diacak, diuji di 4 titik potong (Keputusan 37). Pada dua titik di periode test, `realized_vol` juga diacak.
+  - `lag1–3_log_return` sama dengan `log_return.shift(k)`.
+  - TF-IDF/SVD identik walau teks valid+test diganti.
+  - 0 dari 6.013 artikel terbit setelah cutoff 08.00 WIB hari targetnya, dan `target_date` jalur BERT sama dengan `news_tfidf_clean.csv`.
+  - Tidak ada kolom target di file fitur teks.
+
+### Alternatif yang Tidak Dipilih
+- **C_optimized sebagai Model C pembanding utama**: tidak dipilih karena upaya tuningnya lebih besar daripada A dan B (Keputusan 41).
+- **Memasang versi library lama untuk mereproduksi 0,760**: tidak dipilih karena versi yang dipakai tim tidak tercatat.
+
+### Keterbatasan
+- Test kecil (167 hari; satu hari = 0,6 poin akurasi) dan hanya satu periode.
+- Top2Vec dan embedding statis dilatih secara transduktif di seluruh korpus oleh tim. Ini bukan kebocoran label, tetapi representasinya ikut melihat teks periode test.
+- Seleksi Model C memakai aturan yang diubah dua kali setelah CV terlihat (Keputusan 47).

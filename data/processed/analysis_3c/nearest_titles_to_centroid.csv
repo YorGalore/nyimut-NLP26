@@ -1,0 +1,21 @@
+cluster,rank,target_date,title,cosine_to_centroid
+high,1,2024-05-16,"Georgia president holds talks on 'how to save' the country as U.S., EU and NATO decry 'Russian law'",0.883662
+high,2,2024-05-13,Ukraine war updates: Putin says Russia 'will not allow anyone to threaten us' as Moscow revels in military might,0.873927
+high,3,2024-11-20,Russia-U.S. tensions briefly hit global markets as Putin lowers the threshold for a nuclear strike,0.872520
+high,4,2024-04-16,Ukraine war updates: Kremlin warns escalation in Middle East is 'in no one's interests' but won't condemn ally Iran's attack,0.866050
+high,5,2024-09-10,"Trump's vow of 100% tariffs on nations that snub the dollar is a lose-lose for China and U.S., economist says",0.864224
+high,6,2023-10-26,"U.S. likely to tighten sanctions on Iran crude oil amid Israel-Hamas war, RBC's Helima Croft says",0.861664
+high,7,2024-04-17,Ukraine war updates: China's Xi lays out 4 priorities to resolve Ukraine 'crisis'; Russia intensifies efforts to seize key town,0.860463
+high,8,2024-04-16,"U.S. ready to sanction Chinese banks if they aid Russia's war machine, Yellen says",0.858246
+high,9,2024-05-20,Russia-Ukraine war live updates: Putin says capturing Ukraine's Kharkiv is not part of Russia's current plan; power outages in Crimea,0.856653
+high,10,2022-05-09,Op-ed: Russia's war on Ukraine shows the urgent need to move away from fossil fuels as fast as possible,0.853169
+low,1,2022-07-26,Zelenskyy says Putin is waging a 'gas war' against Europe; wheat prices rise after Odesa attack,0.882626
+low,2,2022-03-09,Biden says U.S. will ban Russian oil imports in response to Putin's invasion of Ukraine,0.877434
+low,3,2022-01-27,Biden and Putin's Ukraine crisis gets personal as the U.S. tries to deter Russian invasion,0.877113
+low,4,2022-01-26,Biden says a Russian invasion of Ukraine 'would change the world',0.872787
+low,5,2022-07-21,'Russia is blackmailing us': EU asks member states to ration energy as Putin tightens grip on gas supplies,0.871720
+low,6,2022-04-11,"Ukraine war is a key test in how the world responds to abuse of power, ex-UK foreign minister says",0.871126
+low,7,2023-09-15,Ukraine ramps up attacks on occupied Crimea; Russia says U.S. 'has no right to lecture us how to live',0.870822
+low,8,2023-09-04,Russia's Putin says he will soon meet with China President Xi as war in Ukraine drags on,0.869668
+low,9,2022-03-01,Jim Cramer says Russia's invasion of Ukraine could put more pressure on Fed to raise interest rates,0.869368
+low,10,2022-01-17,The U.S. hopes the threat of harsh sanctions deters a Russian invasion of Ukraine-Here's how they work,0.865552

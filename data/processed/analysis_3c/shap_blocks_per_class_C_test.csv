@@ -1,0 +1,13 @@
+block,n_columns,class,mean_abs_shap_sum,share_within_class
+price,10,high,1.600931,0.588318
+price,10,low,1.954609,0.700509
+price,10,medium,1.074975,0.519536
+finbert,768,high,0.902327,0.331592
+finbert,768,low,0.747021,0.267723
+finbert,768,medium,0.937188,0.452944
+top2vec,204,high,0.133389,0.049018
+top2vec,204,low,0.076484,0.027411
+top2vec,204,medium,0.047920,0.023160
+ner,54,high,0.084553,0.031072
+ner,54,low,0.012156,0.004357
+ner,54,medium,0.009023,0.004361

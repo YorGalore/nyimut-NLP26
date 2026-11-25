@@ -1,0 +1,151 @@
+rank_component,component,mean_abs_shap_test,sign,rank_term,term,weight
+1,tfidf_svd_5,0.233100,positif,1,gas,0.443635
+1,tfidf_svd_5,0.233100,positif,2,energy,0.187561
+1,tfidf_svd_5,0.233100,positif,3,climate,0.134309
+1,tfidf_svd_5,0.233100,positif,4,cramer,0.126148
+1,tfidf_svd_5,0.233100,positif,5,europe,0.122916
+1,tfidf_svd_5,0.233100,positif,6,natural gas,0.107736
+1,tfidf_svd_5,0.233100,positif,7,nord,0.106951
+1,tfidf_svd_5,0.233100,positif,8,nord stream,0.106470
+1,tfidf_svd_5,0.233100,positif,9,gazprom,0.103154
+1,tfidf_svd_5,0.233100,positif,10,oil gas,0.102878
+1,tfidf_svd_5,0.233100,positif,11,fossil,0.102410
+1,tfidf_svd_5,0.233100,positif,12,pipeline,0.102218
+1,tfidf_svd_5,0.233100,positif,13,natural,0.101905
+1,tfidf_svd_5,0.233100,positif,14,stream,0.101043
+1,tfidf_svd_5,0.233100,positif,15,germany,0.097066
+1,tfidf_svd_5,0.233100,negatif,1,ukraine,-0.171309
+1,tfidf_svd_5,0.233100,negatif,2,opec,-0.162365
+1,tfidf_svd_5,0.233100,negatif,3,barrels,-0.112439
+1,tfidf_svd_5,0.233100,negatif,4,nato,-0.109827
+1,tfidf_svd_5,0.233100,negatif,5,trump,-0.104899
+1,tfidf_svd_5,0.233100,negatif,6,barrels per,-0.091261
+1,tfidf_svd_5,0.233100,negatif,7,per,-0.090802
+1,tfidf_svd_5,0.233100,negatif,8,per day,-0.090218
+1,tfidf_svd_5,0.233100,negatif,9,crude,-0.079636
+1,tfidf_svd_5,0.233100,negatif,10,million barrels,-0.078952
+1,tfidf_svd_5,0.233100,negatif,11,ukrainian,-0.075771
+1,tfidf_svd_5,0.233100,negatif,12,zelenskyy,-0.075017
+1,tfidf_svd_5,0.233100,negatif,13,barrel,-0.074994
+1,tfidf_svd_5,0.233100,negatif,14,day,-0.071501
+1,tfidf_svd_5,0.233100,negatif,15,demand,-0.070566
+2,tfidf_svd_14,0.231617,positif,1,biden,0.335054
+2,tfidf_svd_14,0.231617,positif,2,oil,0.197377
+2,tfidf_svd_14,0.231617,positif,3,house,0.154966
+2,tfidf_svd_14,0.231617,positif,4,trump,0.136035
+2,tfidf_svd_14,0.231617,positif,5,cap,0.126703
+2,tfidf_svd_14,0.231617,positif,6,india,0.124691
+2,tfidf_svd_14,0.231617,positif,7,russian oil,0.112881
+2,tfidf_svd_14,0.231617,positif,8,administration,0.108731
+2,tfidf_svd_14,0.231617,positif,9,white house,0.106886
+2,tfidf_svd_14,0.231617,positif,10,white,0.103062
+2,tfidf_svd_14,0.231617,positif,11,taiwan,0.099563
+2,tfidf_svd_14,0.231617,positif,12,price cap,0.092303
+2,tfidf_svd_14,0.231617,positif,13,sanctions,0.091053
+2,tfidf_svd_14,0.231617,positif,14,border,0.076879
+2,tfidf_svd_14,0.231617,positif,15,joe biden,0.076844
+2,tfidf_svd_14,0.231617,negatif,1,china,-0.114338
+2,tfidf_svd_14,0.231617,negatif,2,russia,-0.102525
+2,tfidf_svd_14,0.231617,negatif,3,nuclear,-0.101236
+2,tfidf_svd_14,0.231617,negatif,4,tariffs,-0.092338
+2,tfidf_svd_14,0.231617,negatif,5,opec,-0.078365
+2,tfidf_svd_14,0.231617,negatif,6,per day,-0.076622
+2,tfidf_svd_14,0.231617,negatif,7,ai,-0.075880
+2,tfidf_svd_14,0.231617,negatif,8,barrels per,-0.072577
+2,tfidf_svd_14,0.231617,negatif,9,bakhmut,-0.065355
+2,tfidf_svd_14,0.231617,negatif,10,quarter,-0.064420
+2,tfidf_svd_14,0.231617,negatif,11,forces,-0.063676
+2,tfidf_svd_14,0.231617,negatif,12,war,-0.062575
+2,tfidf_svd_14,0.231617,negatif,13,saudi,-0.062157
+2,tfidf_svd_14,0.231617,negatif,14,growth,-0.061136
+2,tfidf_svd_14,0.231617,negatif,15,germany,-0.057955
+3,tfidf_svd_13,0.229553,positif,1,cramer,0.294860
+3,tfidf_svd_13,0.229553,positif,2,gas,0.183938
+3,tfidf_svd_13,0.229553,positif,3,opec,0.168481
+3,tfidf_svd_13,0.229553,positif,4,germany,0.150452
+3,tfidf_svd_13,0.229553,positif,5,nord,0.123047
+3,tfidf_svd_13,0.229553,positif,6,nord stream,0.122923
+3,tfidf_svd_13,0.229553,positif,7,europe,0.122452
+3,tfidf_svd_13,0.229553,positif,8,taiwan,0.121528
+3,tfidf_svd_13,0.229553,positif,9,ukraine,0.117973
+3,tfidf_svd_13,0.229553,positif,10,stream,0.113194
+3,tfidf_svd_13,0.229553,positif,11,trump,0.101433
+3,tfidf_svd_13,0.229553,positif,12,biden,0.099677
+3,tfidf_svd_13,0.229553,positif,13,pipeline,0.097050
+3,tfidf_svd_13,0.229553,positif,14,jim cramer,0.090554
+3,tfidf_svd_13,0.229553,positif,15,gazprom,0.088494
+3,tfidf_svd_13,0.229553,negatif,1,india,-0.192047
+3,tfidf_svd_13,0.229553,negatif,2,climate,-0.129565
+3,tfidf_svd_13,0.229553,negatif,3,shell,-0.117773
+3,tfidf_svd_13,0.229553,negatif,4,bp,-0.107463
+3,tfidf_svd_13,0.229553,negatif,5,billion,-0.093388
+3,tfidf_svd_13,0.229553,negatif,6,russian,-0.091477
+3,tfidf_svd_13,0.229553,negatif,7,quarter,-0.090180
+3,tfidf_svd_13,0.229553,negatif,8,cap,-0.081060
+3,tfidf_svd_13,0.229553,negatif,9,sanctions,-0.076896
+3,tfidf_svd_13,0.229553,negatif,10,profit,-0.072287
+3,tfidf_svd_13,0.229553,negatif,11,company,-0.071863
+3,tfidf_svd_13,0.229553,negatif,12,russian oil,-0.071154
+3,tfidf_svd_13,0.229553,negatif,13,turkey,-0.069749
+3,tfidf_svd_13,0.229553,negatif,14,earnings,-0.063454
+3,tfidf_svd_13,0.229553,negatif,15,prigozhin,-0.063315
+4,tfidf_svd_9,0.218987,positif,1,nato,0.244449
+4,tfidf_svd_9,0.218987,positif,2,red sea,0.198835
+4,tfidf_svd_9,0.218987,positif,3,sweden,0.194269
+4,tfidf_svd_9,0.218987,positif,4,iran,0.170216
+4,tfidf_svd_9,0.218987,positif,5,taiwan,0.158072
+4,tfidf_svd_9,0.218987,positif,6,finland,0.155995
+4,tfidf_svd_9,0.218987,positif,7,red,0.150458
+4,tfidf_svd_9,0.218987,positif,8,houthi,0.139887
+4,tfidf_svd_9,0.218987,positif,9,turkey,0.136157
+4,tfidf_svd_9,0.218987,positif,10,sea,0.131218
+4,tfidf_svd_9,0.218987,positif,11,shipping,0.093014
+4,tfidf_svd_9,0.218987,positif,12,vessels,0.089218
+4,tfidf_svd_9,0.218987,positif,13,attack,0.083235
+4,tfidf_svd_9,0.218987,positif,14,houthis,0.079047
+4,tfidf_svd_9,0.218987,positif,15,erdogan,0.077326
+4,tfidf_svd_9,0.218987,negatif,1,korea,-0.208746
+4,tfidf_svd_9,0.218987,negatif,2,north korea,-0.167411
+4,tfidf_svd_9,0.218987,negatif,3,north,-0.157967
+4,tfidf_svd_9,0.218987,negatif,4,korean,-0.140249
+4,tfidf_svd_9,0.218987,negatif,5,india,-0.128911
+4,tfidf_svd_9,0.218987,negatif,6,opec,-0.114192
+4,tfidf_svd_9,0.218987,negatif,7,south,-0.096994
+4,tfidf_svd_9,0.218987,negatif,8,gaza,-0.091861
+4,tfidf_svd_9,0.218987,negatif,9,climate,-0.071569
+4,tfidf_svd_9,0.218987,negatif,10,prigozhin,-0.071354
+4,tfidf_svd_9,0.218987,negatif,11,hamas,-0.070270
+4,tfidf_svd_9,0.218987,negatif,12,south korea,-0.069299
+4,tfidf_svd_9,0.218987,negatif,13,north korean,-0.067616
+4,tfidf_svd_9,0.218987,negatif,14,wagner,-0.066733
+4,tfidf_svd_9,0.218987,negatif,15,kim,-0.062969
+5,tfidf_svd_8,0.212293,positif,1,iran,0.460646
+5,tfidf_svd_8,0.212293,positif,2,iranian,0.184307
+5,tfidf_svd_8,0.212293,positif,3,saudi,0.116336
+5,tfidf_svd_8,0.212293,positif,4,nuclear,0.110150
+5,tfidf_svd_8,0.212293,positif,5,tehran,0.102911
+5,tfidf_svd_8,0.212293,positif,6,trump,0.088727
+5,tfidf_svd_8,0.212293,positif,7,deal,0.080862
+5,tfidf_svd_8,0.212293,positif,8,raisi,0.079837
+5,tfidf_svd_8,0.212293,positif,9,arabia,0.076296
+5,tfidf_svd_8,0.212293,positif,10,saudi arabia,0.076296
+5,tfidf_svd_8,0.212293,positif,11,climate,0.072703
+5,tfidf_svd_8,0.212293,positif,12,india,0.070499
+5,tfidf_svd_8,0.212293,positif,13,gas,0.056028
+5,tfidf_svd_8,0.212293,positif,14,islamic,0.055058
+5,tfidf_svd_8,0.212293,positif,15,nuclear deal,0.052568
+5,tfidf_svd_8,0.212293,negatif,1,korea,-0.221260
+5,tfidf_svd_8,0.212293,negatif,2,korean,-0.155992
+5,tfidf_svd_8,0.212293,negatif,3,cramer,-0.148398
+5,tfidf_svd_8,0.212293,negatif,4,nato,-0.146429
+5,tfidf_svd_8,0.212293,negatif,5,north,-0.143194
+5,tfidf_svd_8,0.212293,negatif,6,north korea,-0.143098
+5,tfidf_svd_8,0.212293,negatif,7,gaza,-0.126189
+5,tfidf_svd_8,0.212293,negatif,8,sweden,-0.123231
+5,tfidf_svd_8,0.212293,negatif,9,south,-0.115526
+5,tfidf_svd_8,0.212293,negatif,10,finland,-0.114588
+5,tfidf_svd_8,0.212293,negatif,11,hamas,-0.107240
+5,tfidf_svd_8,0.212293,negatif,12,south korea,-0.101367
+5,tfidf_svd_8,0.212293,negatif,13,index,-0.084471
+5,tfidf_svd_8,0.212293,negatif,14,south korean,-0.077205
+5,tfidf_svd_8,0.212293,negatif,15,stocks,-0.076599

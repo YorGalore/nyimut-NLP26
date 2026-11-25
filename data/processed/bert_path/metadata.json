@@ -1,0 +1,127 @@
+{
+  "script": "src/extract_bert_embeddings.py",
+  "compose": "title_body",
+  "text_stats": {
+    "compose": "title_body",
+    "n_articles_news_tfidf_clean": 6013,
+    "n_matched": 6013,
+    "n_unmatched": 0,
+    "n_body_empty": 343,
+    "n_description_fallback": 341,
+    "n_title_only": 2,
+    "n_empty_text": 0,
+    "n_words_median": 542.0,
+    "n_words_mean": 590.014136038583,
+    "n_target_dates": 1108,
+    "cleaning": "clean_text() dari src/preprocess_news_tfidf.py per bagian (title/description/body); tanpa lowercase, stopword removal, atau penghapusan tanda baca"
+  },
+  "versions": {
+    "python": "3.14.10",
+    "torch": "2.15.0",
+    "transformers": "5.24.0",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1"
+  },
+  "device": "mps",
+  "dtype": "float32 (AutoModel.from_pretrained(dtype=torch.float32))",
+  "inference": "model.eval(); torch.no_grad() + torch.inference_mode() (di extract_chunk_embeddings)",
+  "chunking": {
+    "max_length": 512,
+    "overlap": 50,
+    "batch_size": 8,
+    "source": "contextual.create_chunks (special token dideteksi otomatis per tokenizer)"
+  },
+  "pooling": "mean pooling token konten (attention_mask * (1 - special_tokens_mask)) per chunk; artikel = rata-rata sederhana antar-chunk; hari = rata-rata antar-artikel per target_date",
+  "padding": "padding kanan manual (contextual.prepare_batch); posisi padding attention_mask=0 sehingga tidak ikut attention maupun rata-rata",
+  "daily_format": "satu baris per tanggal aligned_daily.csv; tanggal tanpa artikel = vektor nol",
+  "seed": 42,
+  "open_questions": [
+    "Keputusan 23 menyebut 454 artikel dengan body kosong, sedangkan bert_text.py menemukan 343 (341 fallback description, 2 judul saja) pada 6013 artikel news_tfidf_clean. Selisih belum diselidiki (kemungkinan beda basis korpus/definisi kosong)."
+  ],
+  "models": {
+    "finbert": {
+      "checkpoint": "ProsusAI/finbert",
+      "revision_commit_hash": "0bc2ac10dda6929bcb1f77ccc43c7ec5c424f031",
+      "hidden_size": 768,
+      "pad_token_handling": "pad_token bawaan: '[PAD]' (id 0); eos_token: None (id None)",
+      "qwen_note": null,
+      "n_chunks_total": 12586,
+      "n_articles_multi_chunk": 4471,
+      "n_articles_no_chunk": 0,
+      "special_tokens": [
+        "Prefix tokens    : [101]",
+        "Suffix tokens    : [102]"
+      ],
+      "article_rows_nonfinite": 0,
+      "article_rows_all_zero": 0,
+      "seconds_load": 4.4,
+      "seconds_embed": 635.0,
+      "seconds_per_chunk": 0.0505,
+      "target_dates_with_articles": 1108,
+      "target_dates_not_in_aligned_daily": [],
+      "daily_rows_nonfinite": 0,
+      "daily_rows_all_zero": 94,
+      "output": "data/processed/bert_path/finbert_fulltext_features.csv",
+      "output_shape": [
+        1202,
+        769
+      ]
+    },
+    "roberta": {
+      "checkpoint": "FacebookAI/roberta-base",
+      "revision_commit_hash": "e2da8e2f811d1448a5b465c236feacd80ffbac7b",
+      "hidden_size": 768,
+      "pad_token_handling": "pad_token bawaan: '<pad>' (id 1); eos_token: '</s>' (id 2)",
+      "qwen_note": null,
+      "n_chunks_total": 12189,
+      "n_articles_multi_chunk": 4342,
+      "n_articles_no_chunk": 0,
+      "special_tokens": [
+        "Prefix tokens    : [0]",
+        "Suffix tokens    : [2]"
+      ],
+      "article_rows_nonfinite": 0,
+      "article_rows_all_zero": 0,
+      "seconds_load": 3.0,
+      "seconds_embed": 598.7,
+      "seconds_per_chunk": 0.0491,
+      "target_dates_with_articles": 1108,
+      "target_dates_not_in_aligned_daily": [],
+      "daily_rows_nonfinite": 0,
+      "daily_rows_all_zero": 94,
+      "output": "data/processed/bert_path/roberta_fulltext_features.csv",
+      "output_shape": [
+        1202,
+        769
+      ]
+    },
+    "qwen": {
+      "checkpoint": "Qwen/Qwen2.5-0.5B",
+      "revision_commit_hash": "060db6499f32faf8b98477b0a26969ef7d8b9987",
+      "hidden_size": 896,
+      "pad_token_handling": "pad_token bawaan: '<|endoftext|>' (id 151643); eos_token: '<|endoftext|>' (id 151643)",
+      "qwen_note": "Qwen tidak punya [CLS]/[SEP]; deteksi otomatis create_chunks -> ['Prefix tokens    : []', 'Suffix tokens    : []']. Pooling memakai attention_mask, padding tidak dihitung.",
+      "n_chunks_total": 12335,
+      "n_articles_multi_chunk": 4411,
+      "n_articles_no_chunk": 0,
+      "special_tokens": [
+        "Prefix tokens    : []",
+        "Suffix tokens    : []"
+      ],
+      "article_rows_nonfinite": 0,
+      "article_rows_all_zero": 0,
+      "seconds_load": 4.6,
+      "seconds_embed": 2695.4,
+      "seconds_per_chunk": 0.2185,
+      "target_dates_with_articles": 1108,
+      "target_dates_not_in_aligned_daily": [],
+      "daily_rows_nonfinite": 0,
+      "daily_rows_all_zero": 94,
+      "output": "data/processed/bert_path/qwen_fulltext_features.csv",
+      "output_shape": [
+        1202,
+        897
+      ]
+    }
+  }
+}

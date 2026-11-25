@@ -1,0 +1,90 @@
+train: 772 hari (2021-09-16 .. 2025-03-25)
+valid: 165 hari (2025-03-26 .. 2025-12-09)
+test : 167 hari (2025-12-11 .. 2026-09-01)
+
+============================================================
+A: XGBoost harga (PRICE_FEATURES)
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 100, 'max_depth': 3, 'learning_rate': 0.1}
+Akurasi valid dengan kombinasi ini: 0.806
+18.7s
+============================================================
+B: XGBoost harga + LM + TF-IDF(SVD 20)
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 400, 'max_depth': 2, 'learning_rate': 0.05}
+Akurasi valid dengan kombinasi ini: 0.812
+20.1s
+============================================================
+C1: XGBoost harga + finbert_fulltext jalur BERT (early fusion)
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 100, 'max_depth': 2, 'learning_rate': 0.03}
+Akurasi valid dengan kombinasi ini: 0.788
+88.2s
+============================================================
+C2: C1 + Top2Vec
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 200, 'max_depth': 4, 'learning_rate': 0.03}
+Akurasi valid dengan kombinasi ini: 0.800
+103.5s
+============================================================
+C3: C1 + NER
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 100, 'max_depth': 2, 'learning_rate': 0.03}
+Akurasi valid dengan kombinasi ini: 0.788
+93.4s
+============================================================
+C: Model C: C1 + Top2Vec + NER
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 100, 'max_depth': 3, 'learning_rate': 0.05}
+Akurasi valid dengan kombinasi ini: 0.800
+105.2s
+============================================================
+EF5_old: Pembanding sekunder: harga + roberta_fulltext LAMA + LDA (bukan Model C)
+Hyperparameter terbaik (dipilih dari 27 kombinasi via akurasi VALID): {'n_estimators': 100, 'max_depth': 2, 'learning_rate': 0.05}
+Akurasi valid dengan kombinasi ini: 0.800
+91.8s
+============================================================
+C_optimized: Fitur C, grid diperluas dipilih via walk-forward CV train+valid
+  C_optimized CV: 12/216 kombinasi (x3 n_estimators) 187s
+  C_optimized CV: 24/216 kombinasi (x3 n_estimators) 370s
+  C_optimized CV: 36/216 kombinasi (x3 n_estimators) 549s
+  C_optimized CV: 48/216 kombinasi (x3 n_estimators) 729s
+  C_optimized CV: 60/216 kombinasi (x3 n_estimators) 899s
+  C_optimized CV: 72/216 kombinasi (x3 n_estimators) 1072s
+  C_optimized CV: 84/216 kombinasi (x3 n_estimators) 1347s
+  C_optimized CV: 96/216 kombinasi (x3 n_estimators) 1624s
+  C_optimized CV: 108/216 kombinasi (x3 n_estimators) 1886s
+  C_optimized CV: 120/216 kombinasi (x3 n_estimators) 2145s
+  C_optimized CV: 132/216 kombinasi (x3 n_estimators) 2368s
+  C_optimized CV: 144/216 kombinasi (x3 n_estimators) 2593s
+  C_optimized CV: 156/216 kombinasi (x3 n_estimators) 2943s
+  C_optimized CV: 168/216 kombinasi (x3 n_estimators) 3298s
+  C_optimized CV: 180/216 kombinasi (x3 n_estimators) 3610s
+  C_optimized CV: 192/216 kombinasi (x3 n_estimators) 3935s
+  C_optimized CV: 204/216 kombinasi (x3 n_estimators) 4190s
+  C_optimized CV: 216/216 kombinasi (x3 n_estimators) 4451s
+Hyperparameter terbaik (CV macro-F1 0.7843): {'n_estimators': 100, 'max_depth': 2, 'learning_rate': 0.1, 'subsample': 1.0, 'colsample_bytree': 0.6, 'min_child_weight': 1, 'reg_lambda': 1}
+4455.7s
+Uji kebocoran: semua lulus
+        row  n_features  val_accuracy  test_accuracy  test_macro_f1  test_accuracy_ci_low  test_accuracy_ci_high  mcnemar_vs_naive_p
+      naive           1        0.7273         0.7126         0.7152                0.6287                 0.7665              1.0000
+          A          10        0.8061         0.7305         0.7368                0.6407                 0.7904              0.7428
+          B          33        0.8121         0.7665         0.7722                0.6945                 0.8204              0.1877
+         C1         778        0.7879         0.7605         0.7652                0.6946                 0.8084              0.2430
+         C2         982        0.8000         0.7545         0.7597                0.6826                 0.8084              0.3240
+         C3         832        0.7879         0.7605         0.7652                0.6946                 0.8084              0.2430
+          C        1036        0.8000         0.7725         0.7766                0.6946                 0.8323              0.1433
+C_optimized        1036        0.7818         0.7725         0.7766                0.6886                 0.8323              0.1433
+    EF5_old         828        0.8000         0.7485         0.7531                0.6647                 0.8024              0.4050
+  comparison  delta_accuracy_second_minus_first  delta_accuracy_ci_low  delta_accuracy_ci_high  mcnemar_second_only_correct  mcnemar_first_only_correct  mcnemar_p_value
+      A vs B                             0.0359                -0.0060                  0.0838                            9                           3           0.1460
+      B vs C                             0.0060                -0.0419                  0.0539                            8                           7           1.0000
+      A vs C                             0.0419                -0.0180                  0.1078                           14                           7           0.1892
+EF5_old vs C                             0.0240                -0.0060                  0.0659                            7                           3           0.3438
+{
+ "A_test_accuracy": {
+  "expected_keputusan_44": 0.731,
+  "obtained": 0.730539,
+  "match_3_decimals": true
+ },
+ "B_test_accuracy": {
+  "expected_keputusan_44": 0.76,
+  "obtained": 0.766467,
+  "match_3_decimals": false
+ }
+}
+Total 5042s

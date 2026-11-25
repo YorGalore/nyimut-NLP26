@@ -1,0 +1,15 @@
+{
+  "compose": "title_body",
+  "n_articles_news_tfidf_clean": 6013,
+  "n_matched": 6013,
+  "n_unmatched": 0,
+  "unmatched_urls": [],
+  "n_body_empty": 343,
+  "n_description_fallback": 341,
+  "n_title_only": 2,
+  "n_empty_text": 0,
+  "n_words_median": 542.0,
+  "n_words_mean": 590.014136038583,
+  "n_target_dates": 1108,
+  "cleaning": "clean_text() dari src/preprocess_news_tfidf.py per bagian (title/description/body); tanpa lowercase, stopword removal, atau penghapusan tanda baca"
+}

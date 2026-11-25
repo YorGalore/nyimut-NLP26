@@ -1,0 +1,13 @@
+model,true,n,error_rate
+naive,low,51,0.274510
+naive,medium,65,0.323077
+naive,high,51,0.254902
+A,low,51,0.176471
+A,medium,65,0.353846
+A,high,51,0.254902
+B,low,51,0.215686
+B,medium,65,0.230769
+B,high,51,0.254902
+C,low,51,0.117647
+C,medium,65,0.276923
+C,high,51,0.274510

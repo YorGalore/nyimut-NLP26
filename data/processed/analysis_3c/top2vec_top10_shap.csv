@@ -1,0 +1,11 @@
+rank,feature,topic_id,feature_kind,topic_words,mean_abs_shap_all_classes,mean_abs_shap_high,mean_abs_shap_low,mean_abs_shap_medium
+1,topic_topic_14_count,14.000000,count,"treasury yields, treasury yield, federal reserve, yields spiked, yields prices, monetary easing",0.105776,0.105776,0.000000,0.000000
+2,topic_topic_21_mean,21.000000,mean,"chinese manufacturers, chinese firms, chinese automakers, semiconductor industry, chip shortage, semiconductor firms",0.025244,0.000000,0.025244,0.000000
+3,topic_dominant_topic_share,,agregat,,0.021121,0.000000,0.000000,0.021121
+4,topic_topic_41_mean,41.000000,mean,"russian oligarchs, russia onslaught, russian oligarch, banning russian, enabler russia, bypassing ukraine",0.019984,0.019984,0.000000,0.000000
+5,topic_topic_38_mean,38.000000,mean,"nato secretary, nato newest, lambasting nato, nato ally, nato alliance, member nato",0.016965,0.000000,0.016965,0.000000
+6,topic_topic_34_mean,34.000000,mean,"defense contractors, aerospace defense, defense stocks, military buildup, defense spending, technology stocks",0.013815,0.000000,0.000669,0.013146
+7,topic_topic_22_mean,22.000000,mean,"european stocks, russian banks, kyiv deposits, russian oligarchs, russian oligarch, ukrainian advances",0.011280,0.000000,0.011280,0.000000
+8,topic_topic_entropy,,agregat,,0.008464,0.000712,0.007753,0.000000
+9,topic_topic_62_mean,62.000000,mean,"treasury yields, treasury yield, monetary easing, russian banks, sell treasurys, treasury bonds",0.007742,0.000000,0.007742,0.000000
+10,topic_topic_08_count,8.000000,count,"specific tariffs, hefty tariffs, tariff hikes, impose tariffs, sweeping tariffs, tariff threats",0.005370,0.005370,0.000000,0.000000

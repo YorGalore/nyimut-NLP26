@@ -1,0 +1,31 @@
+{
+  "script": "src/analysis_3c_headline_embed.py",
+  "n_articles": 6013,
+  "n_empty_title": 0,
+  "n_all_zero_vectors": 0,
+  "text": "title dari data/raw/cnbc_raw.csv (match url ke news_tfidf_clean.csv), clean_text() saja",
+  "checkpoint": "ProsusAI/finbert",
+  "revision_commit_hash": "0bc2ac10dda6929bcb1f77ccc43c7ec5c424f031",
+  "revision_equals_bert_path_metadata": true,
+  "pad_token_handling": "pad_token bawaan: '[PAD]' (id 0); eos_token: None (id None)",
+  "n_chunks_total": 6013,
+  "n_articles_multi_chunk": 0,
+  "n_articles_no_chunk": 0,
+  "special_tokens": [
+    "Prefix tokens    : [101]",
+    "Suffix tokens    : [102]"
+  ],
+  "pooling": "mean pooling token konten (attention_mask * (1 - special_tokens_mask)); judul = 1 chunk kecuali > 512 token",
+  "dtype": "float32",
+  "device": "mps",
+  "versions": {
+    "python": "3.14.10",
+    "torch": "2.15.0",
+    "transformers": "5.24.0",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1"
+  },
+  "seconds_load": 4.1,
+  "seconds_embed": 20.6,
+  "output": "data/processed/analysis_3c/finbert_headline_article_embeddings.csv"
+}
