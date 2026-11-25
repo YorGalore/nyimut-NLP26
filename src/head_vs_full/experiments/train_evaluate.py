@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import sys
 import warnings
 
 import numpy as np
@@ -27,16 +28,16 @@ warnings.filterwarnings("ignore")
 # ============================================================
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR / "src"))
+# Split, label, dan fitur harga diambil dari split resmi (sama dengan Tugas 2 dan
+# semua modul Tugas 3): 772 / 165 / 167 hari, ambang kelas dari 70% kalender awal.
+from dataset_split import PRICE_FEATURES, canonical_split  # noqa: E402
 
 DATA_DIR = ROOT_DIR / "data" / "processed"
 OUTPUT_DIR = DATA_DIR / "head_vs_full"
 
-ALIGNED_PATH = DATA_DIR / "aligned_daily.csv"
-
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-TRAIN_FRAC = 0.70
-VALID_FRAC = 0.15
 RANDOM_STATE = 42
 
 # Three-class volatility classification
@@ -53,13 +54,8 @@ CLASS_LABELS = [0, 1, 2]
 
 # Seluruh fitur ini dibentuk dari JISDOR sebelum hari t.  Harga/return hari t
 # tidak boleh menjadi input karena dipakai membentuk target volatilitas hari t.
-JISDOR_FEATURES = [
-    "jisdor_lag1_log_return", "jisdor_lag2_log_return",
-    "jisdor_lag3_log_return", "jisdor_lag4_log_return",
-    "jisdor_known4_mean", "jisdor_known4_std",
-    "jisdor_vol_if_r0", "jisdor_vol_if_rtyp_pos",
-    "jisdor_vol_if_rtyp_neg", "jisdor_lag1_volatility_class",
-]
+# Sama persis dengan PRICE_FEATURES di dataset_split.py (Tugas 2).
+JISDOR_FEATURES = list(PRICE_FEATURES)
 
 EXPERIMENTS = {
     "word2vec_headline": "head_vs_full/headline/word2vec_headline_features.csv",
@@ -107,116 +103,6 @@ def normalize_target(series):
         )
 
     return result.astype("Int64")
-
-
-def ensure_volatility_target(aligned):
-    """Use report-defined volatility classes, deriving them only if needed.
-
-    Target definition:
-      1. realized_vol = standard deviation of the latest five BI business-day
-         log returns, including the current day.
-      2. The low/medium/high cutoffs are tertiles calibrated on the earliest
-         70% of chronological observations and then applied to the full series.
-
-    If volatility_class is already present, it is used as-is after normalization.
-    """
-
-    aligned = aligned.sort_values("date").reset_index(drop=True).copy()
-
-    if TARGET_COLUMN not in aligned.columns:
-        if "realized_vol" not in aligned.columns:
-            if "log_return" not in aligned.columns:
-                raise ValueError(
-                    "Kolom 'volatility_class' tidak ditemukan. Untuk membentuk "
-                    "target sesuai definisi laporan, aligned_daily.csv harus "
-                    "memiliki kolom 'realized_vol' atau 'log_return'."
-                )
-
-            log_returns = pd.to_numeric(
-                aligned["log_return"], errors="coerce"
-            )
-            aligned["realized_vol"] = log_returns.rolling(
-                window=5, min_periods=5
-            ).std()
-
-        realized_vol = pd.to_numeric(
-            aligned["realized_vol"], errors="coerce"
-        )
-        calibration_end = int(len(aligned) * 0.70)
-        calibration = realized_vol.iloc[:calibration_end].dropna()
-
-        if len(calibration) < 3:
-            raise ValueError(
-                "Observasi realized_vol pada 70% periode awal tidak cukup "
-                "untuk membentuk tiga kelas volatilitas."
-            )
-
-        try:
-            _, bin_edges = pd.qcut(
-                calibration,
-                q=3,
-                labels=CLASS_NAMES,
-                retbins=True,
-                duplicates="raise",
-            )
-        except ValueError as exc:
-            raise ValueError(
-                "Tertile volatility tidak dapat dibentuk menjadi tiga kelas "
-                "(kemungkinan banyak nilai realized_vol yang sama). "
-                "Periksa distribusi realized_vol."
-            ) from exc
-
-        if len(bin_edges) != 4 or not bin_edges[1] < bin_edges[2]:
-            raise ValueError(
-                "Threshold low/medium/high tidak menghasilkan tiga kelas "
-                "yang berbeda. Periksa distribusi realized_vol."
-            )
-
-        aligned[TARGET_COLUMN] = pd.cut(
-            realized_vol,
-            bins=[-np.inf, bin_edges[1], bin_edges[2], np.inf],
-            labels=CLASS_NAMES,
-            include_lowest=True,
-        )
-
-        print("Volatility target derived from realized_vol.")
-        print(f"Calibration period: earliest {calibration_end} observations")
-        print(f"Low/Medium threshold : {bin_edges[1]:.10f}")
-        print(f"Medium/High threshold: {bin_edges[2]:.10f}")
-    else:
-        print("Using existing volatility_class column from aligned_daily.csv.")
-
-    aligned[TARGET_COLUMN] = normalize_target(aligned[TARGET_COLUMN])
-    return aligned
-
-
-def add_jisdor_features(aligned):
-    """Add leakage-safe JISDOR history features used by every experiment.
-
-    The target at t uses return(t); consequently this function uses only
-    return(t-1) through return(t-4), plus the previous volatility class.
-    """
-    if "log_return" not in aligned.columns:
-        raise ValueError("aligned_daily.csv harus memuat log_return untuk membentuk fitur JISDOR.")
-
-    result = aligned.sort_values("date").reset_index(drop=True).copy()
-    returns = pd.to_numeric(result["log_return"], errors="coerce")
-    known = pd.concat([returns.shift(i) for i in (1, 2, 3, 4)], axis=1)
-
-    for lag in (1, 2, 3, 4):
-        result[f"jisdor_lag{lag}_log_return"] = returns.shift(lag)
-    result["jisdor_known4_mean"] = known.mean(axis=1, skipna=False)
-    result["jisdor_known4_std"] = known.std(axis=1, skipna=False)
-
-    def volatility_if(current_return):
-        return np.std(np.column_stack([known.to_numpy(), current_return]), axis=1, ddof=1)
-
-    typical_abs_return = returns.abs().expanding().median().shift(1).to_numpy()
-    result["jisdor_vol_if_r0"] = volatility_if(np.zeros(len(result)))
-    result["jisdor_vol_if_rtyp_pos"] = volatility_if(typical_abs_return)
-    result["jisdor_vol_if_rtyp_neg"] = volatility_if(-typical_abs_return)
-    result["jisdor_lag1_volatility_class"] = result[TARGET_COLUMN].shift(1)
-    return result
 
 
 # ============================================================
@@ -322,88 +208,35 @@ def calculate_metrics(y_true, y_pred, y_prob):
 
 
 # ============================================================
-# 5. LOAD TARGET DATA
+# 5. LOAD TARGET DATA + 6. CHRONOLOGICAL 70/15/15 SPLIT (split resmi)
 # ============================================================
 
 print("=" * 65)
-print("LOADING VOLATILITY TARGET DATA")
+print("LOADING CANONICAL SPLIT (dataset_split.canonical_split)")
 print("=" * 65)
 
-if not ALIGNED_PATH.exists():
-    raise FileNotFoundError(
-        f"Target file tidak ditemukan: {ALIGNED_PATH}"
-    )
-
-aligned = pd.read_csv(ALIGNED_PATH)
-
-if "date" not in aligned.columns:
-    raise ValueError("Kolom 'date' tidak ditemukan di aligned_daily.csv")
-
-aligned["date"] = pd.to_datetime(
-    aligned["date"],
-    errors="coerce",
-)
-aligned = aligned.dropna(subset=["date"]).copy()
-aligned = ensure_volatility_target(aligned)
-
-# Drop dates where the five-day realized-volatility target is not available.
-aligned = aligned.dropna(subset=[TARGET_COLUMN]).copy()
-aligned[TARGET_COLUMN] = aligned[TARGET_COLUMN].astype(int)
+aligned = canonical_split()
+aligned["date"] = pd.to_datetime(aligned["date"]).dt.normalize()
+aligned[TARGET_COLUMN] = normalize_target(aligned[TARGET_COLUMN]).astype(int)
 aligned = aligned.sort_values("date").reset_index(drop=True)
-aligned = add_jisdor_features(aligned)
 
 if aligned["date"].duplicated().any():
-    raise ValueError(
-        "Terdapat tanggal duplikat di aligned_daily.csv."
-    )
+    raise ValueError("Terdapat tanggal duplikat di split resmi.")
+
+train_dates = aligned.loc[aligned["split"] == "train", "date"]
+valid_dates = aligned.loc[aligned["split"] == "valid", "date"]
+test_dates = aligned.loc[aligned["split"] == "test", "date"]
 
 print(f"Total observations: {len(aligned)}")
 print(f"JISDOR price features: {len(JISDOR_FEATURES)} (all lagged; no day-t price leakage)")
+print()
+print("Volatility class distribution:")
+print(aligned[TARGET_COLUMN].map({0: "Low", 1: "Medium", 2: "High"}).value_counts())
 
-print("\nVolatility class distribution:")
-print(
-    aligned[TARGET_COLUMN]
-    .map({
-        0: "Low",
-        1: "Medium",
-        2: "High",
-    })
-    .value_counts()
-)
-
-
-# ============================================================
-# 6. CHRONOLOGICAL 70/15/15 SPLIT
-# ============================================================
-
-train_end = int(len(aligned) * TRAIN_FRAC)
-valid_end = train_end + int(len(aligned) * VALID_FRAC)
-train_dates = aligned.iloc[:train_end]["date"]
-valid_dates = aligned.iloc[train_end:valid_end]["date"]
-test_dates = aligned.iloc[valid_end:]["date"]
-
-print("\n" + "=" * 65)
-print("CHRONOLOGICAL 70/15/15 SPLIT")
-print("=" * 65)
-
-print(f"Train observations: {len(train_dates)}")
-print(f"Valid observations: {len(valid_dates)}")
-print(f"Test observations : {len(test_dates)}")
-
-print(
-    f"Valid period : {valid_dates.min().date()} "
-    f"to {valid_dates.max().date()}"
-)
-
-print(
-    f"Train period: {train_dates.min().date()} "
-    f"to {train_dates.max().date()}"
-)
-
-print(
-    f"Test period : {test_dates.min().date()} "
-    f"to {test_dates.max().date()}"
-)
+print()
+print(f"Train observations: {len(train_dates)} ({train_dates.min().date()} to {train_dates.max().date()})")
+print(f"Valid observations: {len(valid_dates)} ({valid_dates.min().date()} to {valid_dates.max().date()})")
+print(f"Test observations : {len(test_dates)} ({test_dates.min().date()} to {test_dates.max().date()})")
 
 
 # ============================================================

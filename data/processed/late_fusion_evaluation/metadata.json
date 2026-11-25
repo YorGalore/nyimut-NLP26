@@ -1,0 +1,136 @@
+{
+  "script": "src/evaluate_late_fusion.py",
+  "n_rows": {
+    "train": 772,
+    "validation": 165,
+    "test": 167,
+    "oof": 640
+  },
+  "split_dates": {
+    "train": [
+      "2021-09-16",
+      "2025-03-25"
+    ],
+    "validation": [
+      "2025-03-26",
+      "2025-12-09"
+    ],
+    "test": [
+      "2025-12-11",
+      "2026-09-01"
+    ]
+  },
+  "class_distribution": {
+    "train": {
+      "low": 251,
+      "medium": 247,
+      "high": 274
+    },
+    "validation": {
+      "low": 78,
+      "medium": 33,
+      "high": 54
+    },
+    "test": {
+      "low": 51,
+      "medium": 65,
+      "high": 51
+    }
+  },
+  "oof_folds": [
+    {
+      "fold": 1,
+      "n_train": 132,
+      "n_oof": 128,
+      "train_classes": 3
+    },
+    {
+      "fold": 2,
+      "n_train": 260,
+      "n_oof": 128,
+      "train_classes": 3
+    },
+    {
+      "fold": 3,
+      "n_train": 388,
+      "n_oof": 128,
+      "train_classes": 3
+    },
+    {
+      "fold": 4,
+      "n_train": 516,
+      "n_oof": 128,
+      "train_classes": 3
+    },
+    {
+      "fold": 5,
+      "n_train": 644,
+      "n_oof": 128,
+      "train_classes": 3
+    }
+  ],
+  "feature_coverage_pct": {
+    "kurs/jisdor": 100.0,
+    "embedding/word2vec_headline": 100.0,
+    "embedding/word2vec_fulltext": 100.0,
+    "embedding/fasttext_headline": 100.0,
+    "embedding/fasttext_fulltext": 100.0,
+    "embedding/doc2vec_headline": 100.0,
+    "embedding/doc2vec_fulltext": 100.0,
+    "embedding/finbert_headline": 100.0,
+    "embedding/finbert_fulltext": 100.0,
+    "embedding/roberta_headline": 100.0,
+    "embedding/roberta_fulltext": 100.0,
+    "embedding/qwen_headline": 100.0,
+    "embedding/qwen_fulltext": 100.0,
+    "topic/lda": 100.0,
+    "topic/bertopic": 100.0,
+    "topic/dtm": 100.0,
+    "topic/top2vec": 100.0,
+    "ner/entities": 100.0
+  },
+  "base_models": {
+    "n": 36,
+    "classifiers": "make_classifiers() dari evaluate_feature_fusion.py (tanpa tuning)"
+  },
+  "experiments": {
+    "E1_kurs_emb": [
+      "kurs",
+      "embedding"
+    ],
+    "E2_kurs_emb_topic": [
+      "kurs",
+      "embedding",
+      "topic"
+    ],
+    "E3_kurs_emb_ner": [
+      "kurs",
+      "embedding",
+      "ner"
+    ],
+    "E4_kurs_emb_topic_ner": [
+      "kurs",
+      "embedding",
+      "topic",
+      "ner"
+    ]
+  },
+  "n_combinations": 1296,
+  "fusion_methods": {
+    "simple_avg": "rata-rata probabilitas",
+    "weighted_avg": "bobot simpleks grid 0.05, dipilih min log-loss di OOF",
+    "meta_lr": "StandardScaler + LogisticRegression(C=1.0) atas log-probabilitas, fit di OOF"
+  },
+  "selection": "per experiment x method: max val macro-F1, tie-break val accuracy lalu val log-loss",
+  "baseline": "kurs-saja, classifier dipilih via validation: xgboost",
+  "test_statistics": {
+    "mcnemar": "exact binomial two-sided vs baseline kurs terpilih",
+    "bootstrap": "moving-block, block=10 hari, 2000 resample, CI 95%"
+  },
+  "caveats": [
+    "Parameter fusion dipelajari dari probabilitas OOF (base model dengan data latih lebih sedikit) lalu diterapkan ke base model final yang dilatih di seluruh train.",
+    "Model teks unsupervised (doc2vec/word2vec/fasttext/topic) dilatih teman di seluruh korpus (transduktif), lihat caveat evaluate_feature_fusion.py.",
+    "Skor validation finalis bias ke atas (dipilih dari banyak kandidat); laporkan skor test."
+  ],
+  "runtime_seconds": 758.9
+}

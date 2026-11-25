@@ -1,0 +1,126 @@
+{
+  "script": "src/evaluate_early_fusion.py",
+  "counterpart": "src/evaluate_late_fusion.py",
+  "n_rows": {
+    "train": 772,
+    "validation": 165,
+    "test": 167
+  },
+  "split_dates": {
+    "train": [
+      "2021-09-16",
+      "2025-03-25"
+    ],
+    "validation": [
+      "2025-03-26",
+      "2025-12-09"
+    ],
+    "test": [
+      "2025-12-11",
+      "2026-09-01"
+    ]
+  },
+  "class_distribution": {
+    "train": {
+      "low": 251,
+      "medium": 247,
+      "high": 274
+    },
+    "validation": {
+      "low": 78,
+      "medium": 33,
+      "high": 54
+    },
+    "test": {
+      "low": 51,
+      "medium": 65,
+      "high": 51
+    }
+  },
+  "feature_coverage_pct": {
+    "kurs/jisdor": 100.0,
+    "embedding/word2vec_headline": 100.0,
+    "embedding/word2vec_fulltext": 100.0,
+    "embedding/fasttext_headline": 100.0,
+    "embedding/fasttext_fulltext": 100.0,
+    "embedding/doc2vec_headline": 100.0,
+    "embedding/doc2vec_fulltext": 100.0,
+    "embedding/finbert_headline": 100.0,
+    "embedding/finbert_fulltext": 100.0,
+    "embedding/roberta_headline": 100.0,
+    "embedding/roberta_fulltext": 100.0,
+    "embedding/qwen_headline": 100.0,
+    "embedding/qwen_fulltext": 100.0,
+    "topic/lda": 100.0,
+    "topic/bertopic": 100.0,
+    "topic/dtm": 100.0,
+    "topic/top2vec": 100.0,
+    "ner/entities": 100.0
+  },
+  "source_dims": {
+    "kurs/jisdor": 10,
+    "embedding/word2vec_headline": 103,
+    "embedding/word2vec_fulltext": 102,
+    "embedding/fasttext_headline": 103,
+    "embedding/fasttext_fulltext": 102,
+    "embedding/doc2vec_headline": 102,
+    "embedding/doc2vec_fulltext": 102,
+    "embedding/finbert_headline": 768,
+    "embedding/finbert_fulltext": 768,
+    "embedding/roberta_headline": 768,
+    "embedding/roberta_fulltext": 768,
+    "embedding/qwen_headline": 896,
+    "embedding/qwen_fulltext": 896,
+    "topic/lda": 50,
+    "topic/bertopic": 236,
+    "topic/dtm": 50,
+    "topic/top2vec": 204,
+    "ner/entities": 54
+  },
+  "classifiers": "make_classifiers() dari evaluate_feature_fusion.py (tanpa tuning), sama dengan base model late fusion",
+  "experiments": {
+    "E1_kurs_emb": [
+      "kurs",
+      "embedding"
+    ],
+    "E2_kurs_emb_topic": [
+      "kurs",
+      "embedding",
+      "topic"
+    ],
+    "E3_kurs_emb_ner": [
+      "kurs",
+      "embedding",
+      "ner"
+    ],
+    "E4_kurs_emb_topic_ner": [
+      "kurs",
+      "embedding",
+      "topic",
+      "ner"
+    ]
+  },
+  "n_feature_sets": 120,
+  "n_candidates": 240,
+  "fusion_methods": {
+    "concat_logistic_regression": "concat semua sumber -> logistic_regression, fit di seluruh train",
+    "concat_xgboost": "concat semua sumber -> xgboost, fit di seluruh train"
+  },
+  "selection": "per experiment x method: max val macro-F1, tie-break val accuracy lalu val log-loss",
+  "baseline": "kurs-saja, classifier dipilih via validation: xgboost",
+  "test_statistics": {
+    "mcnemar": "exact binomial two-sided vs baseline kurs terpilih",
+    "bootstrap": "moving-block, block=10 hari, 2000 resample, CI 95%"
+  },
+  "parity_with_late_fusion": [
+    "load_targets, build_source_matrices, make_classifiers, fit_predict_proba, score, EXPERIMENTS, aturan seleksi, baseline, mcnemar_exact, block_bootstrap_indices, bootstrap_ci: di-import dari evaluate_late_fusion.py / evaluate_feature_fusion.py, bukan disalin.",
+    "Baseline kurs-saja dan indeks bootstrap identik (seed sama), jadi selisih vs baseline early dan late fusion dapat dibandingkan langsung."
+  ],
+  "caveats": [
+    "Matriks gabungan tidak direduksi (mis. embedding 768-896 kolom digabung dengan 10 fitur kurs), sama seperti input base model late fusion. Pada XGBoost, blok berdimensi besar dapat mendominasi pemilihan split.",
+    "Jumlah kandidat berbeda: early 240 (classifier tunggal per kandidat), late 3.888 (classifier dipilih per sumber x 3 metode). Skor validation maksimum late fusion lebih terpengaruh bias seleksi; bandingkan juga median per sel (fusion_cell_summary.csv) dan skor test.",
+    "Model teks unsupervised (doc2vec/word2vec/fasttext/topic) dilatih teman di seluruh korpus (transduktif), lihat caveat evaluate_feature_fusion.py.",
+    "Skor validation finalis bias ke atas (dipilih dari banyak kandidat); laporkan skor test."
+  ],
+  "runtime_seconds": 1146.8
+}

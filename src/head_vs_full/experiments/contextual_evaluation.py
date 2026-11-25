@@ -33,7 +33,12 @@ from xgboost import XGBClassifier
 # CONFIGURATION
 # ============================================================
 
-ROOT_DIR = Path(__file__).resolve().parents[2] if Path(__file__).resolve().parent.name == "evaluation" else Path.cwd()
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR / "src"))
+# Split, label, dan fitur harga diambil dari split resmi (sama dengan Tugas 2 dan
+# semua modul Tugas 3): 772 / 165 / 167 hari, ambang kelas dari 70% kalender awal.
+from dataset_split import PRICE_FEATURES, canonical_split  # noqa: E402
+
 DATA_DIR = ROOT_DIR / "data" / "processed"
 TARGET_FILE = DATA_DIR / "aligned_daily.csv"
 FEATURE_DIR = DATA_DIR / "head_vs_full"
@@ -52,13 +57,8 @@ RANDOM_STATE = 42
 
 # Financial-history predictors only. All selected predictors must be lagged.
 # They are used for the market-only baseline and market + embedding experiment.
-MARKET_LAG_CANDIDATES = [
-    "jisdor_lag1_log_return", "jisdor_lag2_log_return",
-    "jisdor_lag3_log_return", "jisdor_lag4_log_return",
-    "jisdor_known4_mean", "jisdor_known4_std",
-    "jisdor_vol_if_r0", "jisdor_vol_if_rtyp_pos",
-    "jisdor_vol_if_rtyp_neg", "jisdor_lag1_volatility_class",
-]
+# Sama persis dengan PRICE_FEATURES di dataset_split.py (Tugas 2).
+MARKET_LAG_CANDIDATES = list(PRICE_FEATURES)
 
 CLASS_ORDER = ["low", "medium", "high"]
 
@@ -277,99 +277,20 @@ def load_feature_file(path: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
 
 
 def load_targets() -> pd.DataFrame:
-    """Load the project-defined volatility target.
+    """Load the canonical, leak-free 70/15/15 dataset used by every other model.
 
-    realized_vol(t) is the standard deviation of the latest five BI business-day
-    log returns, including day t. Volatility class cutoffs are estimated from
-    the earliest 70% of chronological observations and then held fixed.
+    Hari, label volatility_class (ambang tertile dari 70% kalender awal), dan
+    10 fitur harga berasal dari dataset_split.canonical_split(), sehingga hasil
+    di sini sebanding dengan Tugas 2 dan seluruh modul Tugas 3 (772/165/167 hari).
+    Fitur harga hanya memakai return sebelum hari t (tanpa kebocoran harga hari t).
     """
-    if not TARGET_FILE.exists():
-        raise FileNotFoundError(
-            f"Target file tidak ditemukan: {TARGET_FILE}\\n"
-            "Pastikan script dijalankan dari root repository dan aligned_daily.csv tersedia."
-        )
-
-    target = pd.read_csv(TARGET_FILE)
-    required = {"date", "log_return"}
-    missing = required - set(target.columns)
-    if missing:
-        raise ValueError(f"Kolom wajib tidak ada di aligned_daily.csv: {sorted(missing)}")
-
-    target["date"] = pd.to_datetime(target["date"], errors="coerce").dt.normalize()
-    target["log_return"] = pd.to_numeric(target["log_return"], errors="coerce")
-    target = target.dropna(subset=["date"]).sort_values("date")
-    target = target.drop_duplicates("date", keep="last").reset_index(drop=True)
-
-    # Prefer the report-aligned realized_vol column; derive it only if absent.
-    if "realized_vol" in target.columns:
-        target["realized_vol"] = pd.to_numeric(target["realized_vol"], errors="coerce")
-    else:
-        target["realized_vol"] = target["log_return"].rolling(
-            window=5, min_periods=5
-        ).std()
-
-    # Use an existing class column only when it contains the expected labels.
-    valid_classes = set(CLASS_ORDER)
-    if "volatility_class" in target.columns:
-        target["volatility_class"] = (
-            target["volatility_class"].astype(str).str.strip().str.lower()
-        )
-        observed_classes = set(target["volatility_class"].dropna().unique())
-        if not observed_classes.issubset(valid_classes):
-            target["volatility_class"] = np.nan
-    else:
-        target["volatility_class"] = np.nan
-
-    # If class labels are absent/invalid, reproduce the project's fixed
-    # tertile thresholds using only the earliest 70% of chronological rows.
-    if target["volatility_class"].isna().any():
-        valid_vol = target["realized_vol"].notna()
-        chronological_valid = target.loc[valid_vol, "realized_vol"]
-        if len(chronological_valid) < 3:
-            raise ValueError("Tidak cukup observasi realized_vol untuk membentuk tiga kelas volatilitas.")
-
-        calibration_n = max(3, int(np.floor(len(chronological_valid) * 0.70)))
-        calibration = chronological_valid.iloc[:calibration_n]
-        q_low, q_high = calibration.quantile([1 / 3, 2 / 3]).to_numpy()
-        if not np.isfinite(q_low) or not np.isfinite(q_high) or q_low >= q_high:
-            raise ValueError(
-                "Threshold tertile realized_vol tidak valid. Periksa distribusi realized_vol."
-            )
-        target["volatility_class"] = pd.cut(
-            target["realized_vol"],
-            bins=[-np.inf, q_low, q_high, np.inf],
-            labels=CLASS_ORDER,
-            include_lowest=True,
-        ).astype("object")
-
-    target = target.dropna(subset=["realized_vol", "volatility_class"])
-    target = target[target["volatility_class"].isin(CLASS_ORDER)].copy()
-    target["volatility_class"] = pd.Categorical(
-        target["volatility_class"], categories=CLASS_ORDER, ordered=True
-    ).astype(str)
-
-    if target.empty:
-        raise ValueError("Tidak ada baris target volatilitas valid setelah preprocessing.")
-    # Market predictors must be known before the forecast day.  In particular,
-    # do not include log_return(t), realized_vol(t), or kurs(t) as features.
-    returns = target["log_return"]
-    known = pd.concat([returns.shift(i) for i in (1, 2, 3, 4)], axis=1)
-    for lag in (1, 2, 3, 4):
-        target[f"jisdor_lag{lag}_log_return"] = returns.shift(lag)
-    target["jisdor_known4_mean"] = known.mean(axis=1, skipna=False)
-    target["jisdor_known4_std"] = known.std(axis=1, skipna=False)
-
-    def volatility_if(current_return: np.ndarray) -> np.ndarray:
-        return np.std(np.column_stack([known.to_numpy(), current_return]), axis=1, ddof=1)
-
-    typical_abs_return = returns.abs().expanding().median().shift(1).to_numpy()
-    target["jisdor_vol_if_r0"] = volatility_if(np.zeros(len(target)))
-    target["jisdor_vol_if_rtyp_pos"] = volatility_if(typical_abs_return)
-    target["jisdor_vol_if_rtyp_neg"] = volatility_if(-typical_abs_return)
-    target["jisdor_lag1_volatility_class"] = target["volatility_class"].map(
-        {label: index for index, label in enumerate(CLASS_ORDER)}
-    ).shift(1)
-    return target.reset_index(drop=True)
+    target = canonical_split()
+    target["date"] = pd.to_datetime(target["date"]).dt.normalize()
+    target = target.sort_values("date").reset_index(drop=True)
+    target["volatility_class"] = target["volatility_class"].astype(str)
+    if not target["volatility_class"].isin(CLASS_ORDER).all():
+        raise ValueError("Label volatility_class di luar low/medium/high.")
+    return target[["date", "split", "volatility_class", "realized_vol", *MARKET_LAG_CANDIDATES]]
 
 
 def make_classifiers() -> dict[str, Pipeline]:
@@ -777,7 +698,7 @@ def main() -> None:
         "output_dir": str(OUTPUT_DIR),
         "n_target_rows": int(len(targets)),
         "target_class_distribution": {k: int(v) for k, v in targets["volatility_class"].value_counts().items()},
-        "split_strategy": "chronological fixed split: 70% train, 15% validation, 15% test",
+        "split_strategy": "dataset_split.canonical_split(): chronological 70/15/15 = 772/165/167 hari (sama dengan Tugas 2)",
         "train_fraction": TRAIN_FRAC,
         "validation_fraction": VALID_FRAC,
         "test_fraction": 1 - TRAIN_FRAC - VALID_FRAC,
