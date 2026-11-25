@@ -1,10 +1,10 @@
 {
   "model": "finbert_headline",
-  "article_rows": 1202,
+  "article_rows": 6013,
   "embedding_dimension": 768,
   "calendar_dates": 1202,
-  "dates_with_news": 1202,
-  "dates_without_news": 0,
+  "dates_with_news": 1108,
+  "dates_without_news": 94,
   "event_categories": [
     "military_conflict",
     "economic_sanctions",
@@ -34,5 +34,6 @@
     "low",
     "medium",
     "high"
-  ]
+  ],
+  "a3_a4_input_level": "article"
 }
